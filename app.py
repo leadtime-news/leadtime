@@ -43,6 +43,13 @@ def about_page():
     return send_from_directory('.', 'about.html')
 
 
+# Serve the Privacy & Terms page
+@app.route('/privacy-and-terms')
+@app.route('/privacy-and-terms.html')
+def privacy_and_terms_page():
+    return send_from_directory('.', 'privacy-and-terms.html')
+
+
 # Handle the signup form submission
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
