@@ -181,25 +181,25 @@ a{color:var(--red);text-decoration:none}
 <div class="lp-form-heading">The Aging-in-Place Home Walk-Through<span class="lp-form-heading-rule"></span></div>
 </div>
 
-<!-- Mailchimp embedded form (styling overridden above) -->
+<!-- Lead Time signup form (submits to our own backend, not Mailchimp directly) -->
 <div id="mc_embed_signup">
-<form action="https://agewiseindex.us17.list-manage.com/subscribe/post?u=de31965e9dc892efe027c4f4d&amp;id=de5f89484c&amp;f_id=005da7e2f0" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate">
+<form action="/subscribe" method="post" id="lead-time-signup-form" class="validate" novalidate>
 <div id="mc_embed_signup_scroll">
 <div class="mc-field-group">
 <label for="mce-EMAIL">Email address <span class="asterisk">*</span></label>
-<input type="email" name="EMAIL" class="required email" id="mce-EMAIL" required="" value="">
+<input type="email" name="email" class="required email" id="mce-EMAIL" required="" value="">
 </div>
 <div class="mc-field-group">
 <label for="mce-FNAME">First name</label>
-<input type="text" name="FNAME" class="text" id="mce-FNAME" value="">
+<input type="text" name="first_name" class="text" id="mce-FNAME" value="">
 </div>
 <div id="mce-responses" class="clear">
 <div class="response" id="mce-error-response" style="display: none;"></div>
 <div class="response" id="mce-success-response" style="display: none;"></div>
 </div>
-<!-- Anti-bot honeypot — do not remove -->
+<!-- Anti-bot honeypot — do not remove. Bots fill this; humans never see it. -->
 <div aria-hidden="true" style="position:absolute;left:-5000px;">
-<input type="text" name="b_de31965e9dc892efe027c4f4d_de5f89484c" tabindex="-1" value="">
+<input type="text" name="honeypot" tabindex="-1" value="" autocomplete="off">
 </div>
 <div class="clear">
 <input type="submit" name="subscribe" id="mc-embedded-subscribe" class="button" value="Please send me the guide">
@@ -207,6 +207,72 @@ a{color:var(--red);text-decoration:none}
 </div>
 </form>
 </div>
+
+<script>
+  (function() {
+    var form = document.getElementById('lead-time-signup-form');
+    var submitBtn = document.getElementById('mc-embedded-subscribe');
+    var errorBox = document.getElementById('mce-error-response');
+    var successBox = document.getElementById('mce-success-response');
+
+    if (!form) return;
+
+    form.addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      // Hide any previous messages
+      errorBox.style.display = 'none';
+      successBox.style.display = 'none';
+
+      // Validate email on the client side first
+      var emailInput = document.getElementById('mce-EMAIL');
+      var email = (emailInput.value || '').trim();
+      if (!email || email.indexOf('@') === -1 || email.indexOf('.') === -1) {
+        errorBox.textContent = 'Please enter a valid email address.';
+        errorBox.style.display = 'block';
+        return;
+      }
+
+      // Disable the button while submitting
+      submitBtn.disabled = true;
+      var originalBtnText = submitBtn.value;
+      submitBtn.value = 'Sending...';
+
+      // Build the form data
+      var formData = new FormData(form);
+
+      // Send to our backend
+      fetch('/subscribe', {
+        method: 'POST',
+        body: formData
+      })
+      .then(function(response) {
+        return response.json().then(function(data) {
+          return { ok: response.ok, data: data };
+        });
+      })
+      .then(function(result) {
+        if (result.ok && result.data.status === 'success') {
+          // Redirect to the thank-you page
+          window.location.href = '/lead-time-walkthrough-ready';
+        } else {
+          // Show error message
+          var msg = (result.data && result.data.message) || 'Something went wrong. Please try again.';
+          errorBox.textContent = msg;
+          errorBox.style.display = 'block';
+          submitBtn.disabled = false;
+          submitBtn.value = originalBtnText;
+        }
+      })
+      .catch(function(error) {
+        errorBox.textContent = 'Could not send. Please check your connection and try again.';
+        errorBox.style.display = 'block';
+        submitBtn.disabled = false;
+        submitBtn.value = originalBtnText;
+      });
+    });
+  })();
+</script>
 
 </div>
 </section>
