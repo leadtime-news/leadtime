@@ -36,6 +36,13 @@ def thank_you_page():
     return send_from_directory('.', 'lead-time-walkthrough-ready.html')
 
 
+# Serve the About page
+@app.route('/about')
+@app.route('/about.html')
+def about_page():
+    return send_from_directory('.', 'about.html')
+
+
 # Handle the signup form submission
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
