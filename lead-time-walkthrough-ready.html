@@ -5,6 +5,29 @@
 <!-- GA4 opt-out check — must run before GA4 loads -->
 <script>
   try {
+    // Handle URL parameter to set or remove the internal-traffic flag.
+    // Visit ?leadtime_internal=true to flag this browser as internal.
+    // Visit ?leadtime_internal=false to remove the flag.
+    var params = new URLSearchParams(window.location.search);
+    var flag = params.get('leadtime_internal');
+    var banner = null;
+    if (flag === 'true') {
+      localStorage.setItem('leadtime-ga-optout', 'true');
+      banner = 'Internal traffic filter is ON for this browser. Your visits will not appear in Google Analytics. Click to dismiss.';
+    } else if (flag === 'false') {
+      localStorage.removeItem('leadtime-ga-optout');
+      banner = 'Internal traffic filter is OFF for this browser. Your visits will appear in Google Analytics. Click to dismiss.';
+    }
+    if (banner) {
+      window.addEventListener('DOMContentLoaded', function() {
+        var bar = document.createElement('div');
+        bar.textContent = banner;
+        bar.style.cssText = 'position:fixed;top:0;left:0;right:0;background:#a8323f;color:#f2f0e8;padding:12px 20px;font-family:Inter,sans-serif;font-size:14px;text-align:center;z-index:9999;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,0.2);';
+        bar.onclick = function() { bar.remove(); };
+        document.body.appendChild(bar);
+        setTimeout(function() { if (bar.parentNode) bar.remove(); }, 4000);
+      });
+    }
     if (localStorage.getItem('leadtime-ga-optout') === 'true') {
       window['ga-disable-G-8W8DPK41PH'] = true;
     }
