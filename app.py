@@ -1,12 +1,27 @@
 """
 Lead Time signup handler.
 Receives form submissions from leadtime.news, adds them to the Mailchimp
-Lead Time audience, and serves the static site files.
+Lead Time audience, serves the static site files, and emails Karen a
+notification for each signup.
 """
 import os
 import hashlib
+import smtplib
+import threading
+from datetime import datetime
+from email.message import EmailMessage
+
 import requests
 from flask import Flask, request, jsonify, send_from_directory
+
+# Calgary timestamps for the notification emails. If the timezone database
+# is ever unavailable on the server, we quietly fall back to UTC rather
+# than breaking anything.
+try:
+    from zoneinfo import ZoneInfo
+    CALGARY_TZ = ZoneInfo('America/Edmonton')
+except Exception:
+    CALGARY_TZ = None
 
 app = Flask(__name__, static_folder='.', static_url_path='')
 
@@ -15,6 +30,56 @@ MAILCHIMP_API_KEY = os.environ.get('MAILCHIMP_API_KEY', '')
 MAILCHIMP_AUDIENCE_ID = os.environ.get('MAILCHIMP_AUDIENCE_ID', 'de5f89484c')
 # The data center is the suffix on the API key (e.g. 'us17' from a key ending in '-us17')
 MAILCHIMP_DC = MAILCHIMP_API_KEY.split('-')[-1] if '-' in MAILCHIMP_API_KEY else 'us17'
+
+# Notification email configuration - pulled from Render environment variables.
+# The .replace(' ', '') on the app password removes any spaces, so the
+# password works whether it was pasted with or without Google's display spaces.
+NOTIFY_GMAIL_ADDRESS = os.environ.get('NOTIFY_GMAIL_ADDRESS', '').strip()
+NOTIFY_GMAIL_APP_PASSWORD = os.environ.get('NOTIFY_GMAIL_APP_PASSWORD', '').replace(' ', '').strip()
+NOTIFY_TO_ADDRESS = os.environ.get('NOTIFY_TO_ADDRESS', '').strip()
+
+
+def send_signup_notification(email, first_name):
+    """
+    Email Karen about a signup.
+
+    This runs in a background thread and is wrapped in a try/except,
+    so no matter what goes wrong here (Gmail down, password revoked,
+    network hiccup), the subscriber's signup is never affected.
+    """
+    # If the notification settings are missing, do nothing.
+    if not (NOTIFY_GMAIL_ADDRESS and NOTIFY_GMAIL_APP_PASSWORD and NOTIFY_TO_ADDRESS):
+        return
+
+    try:
+        if CALGARY_TZ:
+            timestamp = datetime.now(CALGARY_TZ).strftime('%B %d, %Y at %I:%M %p Calgary time')
+        else:
+            timestamp = datetime.utcnow().strftime('%B %d, %Y at %H:%M UTC')
+
+        message = EmailMessage()
+        message['Subject'] = f'New Lead Time subscriber: {email}'
+        message['From'] = f'Lead Time Signups <{NOTIFY_GMAIL_ADDRESS}>'
+        message['To'] = NOTIFY_TO_ADDRESS
+
+        name_line = f'Name: {first_name}\n' if first_name else ''
+        message.set_content(
+            'A new subscriber just joined Lead Time.\n'
+            '\n'
+            f'Email: {email}\n'
+            f'{name_line}'
+            f'When: {timestamp}\n'
+            '\n'
+            'Sent automatically by leadtime.news.'
+        )
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15) as server:
+            server.login(NOTIFY_GMAIL_ADDRESS, NOTIFY_GMAIL_APP_PASSWORD)
+            server.send_message(message)
+
+    except Exception as e:
+        # Log it for the Render logs, then move on. Never raise.
+        print(f'Signup notification email failed: {e}')
 
 
 # Serve the landing page at the root URL
@@ -60,7 +125,7 @@ def subscribe():
     honeypot = (data.get('honeypot') or '').strip()
 
     # Honeypot check: if a bot filled this hidden field, silently fake success.
-    # Real humans never see or fill this field.
+    # Real humans never see or fill this field. No notification is sent for bots.
     if honeypot:
         return jsonify({'status': 'success'}), 200
 
@@ -94,6 +159,14 @@ def subscribe():
         )
 
         if response.status_code in (200, 201):
+            # Send Karen a notification in the background. The subscriber's
+            # success response goes out immediately and does not wait for,
+            # or depend on, the email below.
+            threading.Thread(
+                target=send_signup_notification,
+                args=(email, first_name),
+                daemon=True
+            ).start()
             return jsonify({'status': 'success'}), 200
         else:
             # Log the error for debugging but don't expose Mailchimp internals to the user
