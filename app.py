@@ -12,7 +12,7 @@ from datetime import datetime
 from email.message import EmailMessage
 
 import requests
-from flask import Flask, request, jsonify, send_from_directory
+from flask import Flask, request, jsonify, send_from_directory, Response
 
 # Calgary timestamps for the notification emails. If the timezone database
 # is ever unavailable on the server, we quietly fall back to UTC rather
@@ -131,16 +131,58 @@ def article_when_the_house_stops_fitting():
     return send_from_directory('.', 'when-the-house-stops-fitting.html')
 
 
-# Serve the sitemap so search engines can discover every page
+# Serve the sitemap so search engines can discover every page.
+# Built inline as an explicit XML response (rather than served as a static
+# file) because some automated crawlers reject the static-file response even
+# when a browser accepts it. This is the most compatible approach.
+SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>https://leadtime.news/</loc>
+    <changefreq>monthly</changefreq>
+    <priority>1.0</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/when-the-house-stops-fitting</loc>
+    <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/about</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/privacy-and-terms</loc>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+  </url>
+</urlset>
+"""
+
+
 @app.route('/sitemap.xml')
 def sitemap():
-    return send_from_directory('.', 'sitemap.xml', mimetype='application/xml')
+    return Response(SITEMAP_XML, mimetype='application/xml')
 
 
-# Serve robots.txt, which points crawlers to the sitemap
+# Serve robots.txt inline, pointing crawlers to the sitemap
+ROBOTS_TXT = """User-agent: *
+Allow: /
+
+Sitemap: https://leadtime.news/sitemap.xml
+"""
+
+
 @app.route('/robots.txt')
 def robots():
-    return send_from_directory('.', 'robots.txt', mimetype='text/plain')
+    return Response(ROBOTS_TXT, mimetype='text/plain')
 
 
 # Handle the signup form submission
