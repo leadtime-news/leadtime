@@ -115,6 +115,22 @@ def privacy_and_terms_page():
     return send_from_directory('.', 'privacy-and-terms.html')
 
 
+# Serve the Articles index page
+@app.route('/articles')
+@app.route('/articles.html')
+def articles_index_page():
+    return send_from_directory('.', 'articles-index.html')
+
+
+# Serve individual articles. Each new article gets its own route below,
+# pointing the clean URL at its HTML file. To add a future article, copy
+# the block for "when-the-house-stops-fitting", change the URL path and
+# the filename to match the new article, and upload the new HTML file.
+@app.route('/articles/when-the-house-stops-fitting')
+def article_when_the_house_stops_fitting():
+    return send_from_directory('.', 'when-the-house-stops-fitting.html')
+
+
 # Handle the signup form submission
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
