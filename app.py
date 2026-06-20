@@ -131,6 +131,18 @@ def article_when_the_house_stops_fitting():
     return send_from_directory('.', 'when-the-house-stops-fitting.html')
 
 
+# Serve the sitemap so search engines can discover every page
+@app.route('/sitemap.xml')
+def sitemap():
+    return send_from_directory('.', 'sitemap.xml', mimetype='application/xml')
+
+
+# Serve robots.txt, which points crawlers to the sitemap
+@app.route('/robots.txt')
+def robots():
+    return send_from_directory('.', 'robots.txt', mimetype='text/plain')
+
+
 # Handle the signup form submission
 @app.route('/subscribe', methods=['POST'])
 def subscribe():
