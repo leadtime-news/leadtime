@@ -39,7 +39,7 @@ NOTIFY_GMAIL_APP_PASSWORD = os.environ.get('NOTIFY_GMAIL_APP_PASSWORD', '').repl
 NOTIFY_TO_ADDRESS = os.environ.get('NOTIFY_TO_ADDRESS', '').strip()
 
 
-def send_signup_notification(email, first_name):
+def send_signup_notification(email, first_name, newsletter_optin):
     """
     Email Karen about a signup.
 
@@ -58,13 +58,18 @@ def send_signup_notification(email, first_name):
             timestamp = datetime.utcnow().strftime('%B %d, %Y at %H:%M UTC')
 
         message = EmailMessage()
-        message['Subject'] = f'New Lead Time subscriber: {email}'
+        if newsletter_optin:
+            message['Subject'] = f'New Lead Time subscriber: {email}'
+            intro = 'A new subscriber just joined Lead Time (ticked the newsletter box).'
+        else:
+            message['Subject'] = f'Guide download (no newsletter): {email}'
+            intro = 'Someone downloaded the guide but did not tick the newsletter box, so they were captured but not subscribed.'
         message['From'] = f'Lead Time Signups <{NOTIFY_GMAIL_ADDRESS}>'
         message['To'] = NOTIFY_TO_ADDRESS
 
         name_line = f'Name: {first_name}\n' if first_name else ''
         message.set_content(
-            'A new subscriber just joined Lead Time.\n'
+            f'{intro}\n'
             '\n'
             f'Email: {email}\n'
             f'{name_line}'
@@ -194,6 +199,10 @@ def subscribe():
     first_name = (data.get('first_name') or '').strip()
     honeypot = (data.get('honeypot') or '').strip()
 
+    # Did the person tick the newsletter box? An unticked checkbox sends
+    # nothing at all, so its mere presence (any value) means they opted in.
+    newsletter_optin = bool((data.get('newsletter_optin') or '').strip())
+
     # Honeypot check: if a bot filled this hidden field, silently fake success.
     # Real humans never see or fill this field. No notification is sent for bots.
     if honeypot:
@@ -210,12 +219,20 @@ def subscribe():
     # Mailchimp uses an MD5 hash of the lowercased email as the subscriber's ID
     subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
 
+    # The newsletter box controls whether this person actually joins the
+    # newsletter. If they ticked it, they're subscribed. If they only
+    # wanted the guide, their email is still captured in the audience but
+    # marked 'unsubscribed', so they never receive the weekly newsletter.
+    # Either way, the guide is delivered (the front end shows the download
+    # page on success regardless of this choice).
+    member_status = 'subscribed' if newsletter_optin else 'unsubscribed'
+
     # Build the request to Mailchimp
     url = f'https://{MAILCHIMP_DC}.api.mailchimp.com/3.0/lists/{MAILCHIMP_AUDIENCE_ID}/members/{subscriber_hash}'
     payload = {
         'email_address': email,
-        'status_if_new': 'subscribed',  # Single opt-in - matches current Lead Time audience setting
-        'status': 'subscribed',
+        'status_if_new': member_status,
+        'status': member_status,
     }
     if first_name:
         payload['merge_fields'] = {'FNAME': first_name}
@@ -234,7 +251,7 @@ def subscribe():
             # or depend on, the email below.
             threading.Thread(
                 target=send_signup_notification,
-                args=(email, first_name),
+                args=(email, first_name, newsletter_optin),
                 daemon=True
             ).start()
             return jsonify({'status': 'success'}), 200

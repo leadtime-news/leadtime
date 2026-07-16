@@ -133,6 +133,12 @@ a{color:var(--red);text-decoration:none}
 #mc_embed_signup #mce-error-response{background:#fdf2f2!important;color:#8a2733!important;border:1px solid #f0c4c9!important}
 #mc_embed_signup #mce-success-response{background:#f0f4ed!important;color:#3a5a3a!important;border:1px solid #c4d4bf!important}
 
+/* Newsletter opt-in checkbox */
+#mc_embed_signup .lp-optin{display:flex!important;align-items:flex-start!important;gap:11px!important;padding:1rem 1rem 1.1rem!important;margin-bottom:1.5rem!important;background:var(--cream-deep)!important;border:1px solid var(--rule)!important;border-radius:4px!important;cursor:pointer!important}
+#mc_embed_signup .lp-optin input[type="checkbox"]{width:19px!important;height:19px!important;min-width:19px!important;margin:2px 0 0 0!important;padding:0!important;accent-color:var(--red)!important;cursor:pointer!important;flex:0 0 auto!important}
+#mc_embed_signup .lp-optin label{font-family:'Inter',sans-serif!important;font-size:13.5px!important;font-weight:400!important;color:var(--ink)!important;line-height:1.5!important;margin:0!important;padding:0!important;cursor:pointer!important;letter-spacing:0!important}
+#mc_embed_signup .lp-optin label .lp-optin-lead{font-weight:600!important}
+
 .lp-form-disclaimer{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-muted);text-align:center;margin-top:1.5rem;line-height:1.5}
 
 /* Footer */
@@ -166,6 +172,7 @@ a{color:var(--red);text-decoration:none}
 .lp-form-section{padding:3rem 1.25rem 3.5rem}
 .lp-form-heading{font-size:24px}
 #mc_embed_signup form{padding:1.5rem 1.25rem!important}
+#mc_embed_signup .lp-optin{padding:0.9rem 0.85rem 1rem!important}
 .lp-footer{padding:2rem 1.25rem 1.25rem}
 .lp-footer-bottom{flex-direction:column;gap:0.75rem}
 }
@@ -216,6 +223,10 @@ a{color:var(--red);text-decoration:none}
 <div class="mc-field-group">
 <label for="mce-FNAME">First name</label>
 <input type="text" name="first_name" class="text" id="mce-FNAME" value="">
+</div>
+<div class="lp-optin">
+<input type="checkbox" name="newsletter_optin" id="mce-NEWSLETTER" value="yes">
+<label for="mce-NEWSLETTER"><span class="lp-optin-lead">Add me to Lead Time, the free weekly newsletter about planning ahead for aging in place.</span> It's quicker to read than your coffee is to finish. Leave whenever you like, with no hard feelings.</label>
 </div>
 <div id="mce-responses" class="clear">
 <div class="response" id="mce-error-response" style="display: none;"></div>
