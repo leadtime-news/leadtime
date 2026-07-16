@@ -87,6 +87,35 @@ def send_signup_notification(email, first_name, newsletter_optin):
         print(f'Signup notification email failed: {e}')
 
 
+def apply_nonsub_tag(subscriber_hash):
+    """
+    Tag a guide-only downloader with 'NONSUB' so Karen can see and filter
+    them in Mailchimp.
+
+    This runs in a background thread and is wrapped in a try/except, so if
+    anything goes wrong here (Mailchimp hiccup, network issue), the
+    subscriber's signup and guide delivery are never affected. The tag is
+    a nice-to-have for Karen's own visibility, not part of the signup path.
+    """
+    if not MAILCHIMP_API_KEY:
+        return
+
+    try:
+        tag_url = (
+            f'https://{MAILCHIMP_DC}.api.mailchimp.com/3.0/lists/'
+            f'{MAILCHIMP_AUDIENCE_ID}/members/{subscriber_hash}/tags'
+        )
+        requests.post(
+            tag_url,
+            json={'tags': [{'name': 'NONSUB', 'status': 'active'}]},
+            auth=('anystring', MAILCHIMP_API_KEY),
+            timeout=10
+        )
+    except Exception as e:
+        # Log it for the Render logs, then move on. Never raise.
+        print(f'NONSUB tag failed: {e}')
+
+
 # Serve the landing page at the root URL
 @app.route('/')
 def home():
@@ -254,6 +283,17 @@ def subscribe():
                 args=(email, first_name, newsletter_optin),
                 daemon=True
             ).start()
+
+            # Guide-only downloaders (didn't tick the box) get the NONSUB
+            # tag so Karen can see and filter them. Runs in the background
+            # and never affects the signup or guide delivery.
+            if not newsletter_optin:
+                threading.Thread(
+                    target=apply_nonsub_tag,
+                    args=(subscriber_hash,),
+                    daemon=True
+                ).start()
+
             return jsonify({'status': 'success'}), 200
         else:
             # Log the error for debugging but don't expose Mailchimp internals to the user
