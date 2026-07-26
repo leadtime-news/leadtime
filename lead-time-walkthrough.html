@@ -132,6 +132,10 @@ a{color:var(--red);text-decoration:none}
 #mc_embed_signup #mce-responses{margin:0!important;padding:0!important;width:100%!important}
 #mc_embed_signup .response{padding:1rem!important;border-radius:4px!important;margin-top:1rem!important;font-size:14px!important;line-height:1.5!important;font-family:'Inter',sans-serif!important}
 #mc_embed_signup #mce-error-response{background:#fdf2f2!important;color:#8a2733!important;border:1px solid #f0c4c9!important}
+#mc_embed_signup .lp-suggest{display:none;margin:9px 0 0 0!important;padding:11px 13px;background:#fbf9f2;border:1px solid var(--rule);border-radius:4px;font-size:15px;line-height:1.55;color:var(--ink-soft);font-family:'Inter',sans-serif}
+#mc_embed_signup .lp-suggest button{background:none;border:none;padding:0;margin:0;font:inherit;color:var(--red);font-weight:600;text-decoration:underline;cursor:pointer}
+#mc_embed_signup .lp-suggest button:hover{color:var(--red-dark)}
+#mc_embed_signup .lp-suggest button:focus{outline:2px solid var(--red);outline-offset:2px;border-radius:2px}
 #mc_embed_signup #mce-success-response{background:#f0f4ed!important;color:#3a5a3a!important;border:1px solid #c4d4bf!important}
 
 /* Newsletter opt-in checkbox */
@@ -220,6 +224,7 @@ a{color:var(--red);text-decoration:none}
 <div class="mc-field-group">
 <label for="mce-EMAIL">Email address <span class="asterisk">*</span></label>
 <input type="email" name="email" class="required email" id="mce-EMAIL" required="" value="">
+<div class="lp-suggest" id="lp-email-suggest" aria-live="polite"></div>
 </div>
 <div class="mc-field-group">
 <label for="mce-FNAME">First name</label>
@@ -251,7 +256,155 @@ a{color:var(--red);text-decoration:none}
     var errorBox = document.getElementById('mce-error-response');
     var successBox = document.getElementById('mce-success-response');
 
+    var emailInput = document.getElementById('mce-EMAIL');
+    var suggestBox = document.getElementById('lp-email-suggest');
+
     if (!form) return;
+
+    // ------------------------------------------------------------------
+    // Email typo catching.
+    //
+    // A typo like "gmail..com" or "gmial.com" looks fine to a simple check
+    // but goes nowhere, and the person never finds out — they see the
+    // download page and assume they're subscribed. So we check the shape of
+    // the address properly, and offer a "did you mean" for near-misses on
+    // the providers our readers actually use.
+    // ------------------------------------------------------------------
+
+    var KNOWN_DOMAINS = [
+      'gmail.com', 'googlemail.com',
+      'hotmail.com', 'hotmail.ca', 'outlook.com', 'outlook.ca',
+      'live.com', 'live.ca', 'msn.com',
+      'yahoo.com', 'yahoo.ca', 'ymail.com',
+      'icloud.com', 'me.com', 'mac.com',
+      'aol.com', 'protonmail.com', 'proton.me',
+      'shaw.ca', 'telus.net', 'telus.com', 'sympatico.ca',
+      'rogers.com', 'bell.net', 'bell.ca', 'cogeco.ca',
+      'videotron.ca', 'eastlink.ca', 'xplornet.com'
+    ];
+
+    // Is this the right shape for an email address? Catches the doubled dot,
+    // a missing or doubled @, spaces, commas, and a missing or stunted ending.
+    function looksLikeEmail(v) {
+      if (!v) return false;
+      if (/[\s,;]/.test(v)) return false;
+      if (v.split('@').length !== 2) return false;
+      if (v.indexOf('..') !== -1) return false;
+      var parts = v.split('@');
+      var local = parts[0];
+      var domain = parts[1];
+      if (!local || !domain) return false;
+      if (local.charAt(0) === '.' || local.charAt(local.length - 1) === '.') return false;
+      if (/^[.-]/.test(domain) || /[.-]$/.test(domain)) return false;
+      if (domain.indexOf('.') === -1) return false;
+      if (!/\.[a-zA-Z]{2,}$/.test(domain)) return false;
+      return true;
+    }
+
+    // Clean up the obvious slips: stray spaces, a comma typed instead of a
+    // dot, doubled dots, a dot left dangling on either end.
+    function tidy(v) {
+      return (v || '')
+        .replace(/\s+/g, '')
+        .replace(/,/g, '.')
+        .replace(/\.{2,}/g, '.')
+        .replace(/^\.+/, '')
+        .replace(/\.+$/, '');
+    }
+
+    // Distance between two words, counting a swap of neighbouring letters
+    // as a single slip — which is what "gmial" actually is.
+    function slipDistance(a, b) {
+      var i, j;
+      var d = [];
+      for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+      for (j = 0; j <= b.length; j++) { d[0][j] = j; }
+      for (i = 1; i <= a.length; i++) {
+        for (j = 1; j <= b.length; j++) {
+          var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+          if (i > 1 && j > 1 &&
+              a.charAt(i - 1) === b.charAt(j - 2) &&
+              a.charAt(i - 2) === b.charAt(j - 1)) {
+            d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+          }
+        }
+      }
+      return d[a.length][b.length];
+    }
+
+    // Returns a corrected domain, or null if there's nothing to suggest.
+    function suggestDomain(domain) {
+      domain = (domain || '').toLowerCase();
+      var i;
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (KNOWN_DOMAINS[i] === domain) return null;   // already correct
+      }
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (slipDistance(domain, KNOWN_DOMAINS[i]) === 1) return KNOWN_DOMAINS[i];
+      }
+      return null;
+    }
+
+    // Works out the best correction for what's currently typed, or null.
+    function correctionFor(email) {
+      if (!looksLikeEmail(email)) {
+        var cleaned = tidy(email);
+        if (cleaned !== email && looksLikeEmail(cleaned)) {
+          var fixedDomain = suggestDomain(cleaned.split('@')[1]);
+          if (fixedDomain) return cleaned.split('@')[0] + '@' + fixedDomain;
+          return cleaned;
+        }
+        return null;
+      }
+      var better = suggestDomain(email.split('@')[1]);
+      if (better) return email.split('@')[0] + '@' + better;
+      return null;
+    }
+
+    var warnedAbout = '';
+
+    function clearSuggestion() {
+      if (!suggestBox) return;
+      suggestBox.style.display = 'none';
+      suggestBox.textContent = '';
+    }
+
+    function showSuggestion(fixed) {
+      if (!suggestBox) return;
+      suggestBox.textContent = 'Did you mean ';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = fixed;
+      btn.addEventListener('click', function() {
+        emailInput.value = fixed;
+        warnedAbout = '';
+        clearSuggestion();
+        errorBox.style.display = 'none';
+        emailInput.focus();
+      });
+      suggestBox.appendChild(btn);
+      suggestBox.appendChild(document.createTextNode('?'));
+      suggestBox.style.display = 'block';
+    }
+
+    // Offer the correction quietly as soon as they leave the box, so they can
+    // fix it before pressing anything. No red warning at this stage.
+    if (emailInput) {
+      emailInput.addEventListener('blur', function() {
+        try {
+          var v = (emailInput.value || '').trim();
+          if (!v) { clearSuggestion(); return; }
+          var fix = correctionFor(v);
+          if (fix) { showSuggestion(fix); } else { clearSuggestion(); }
+        } catch (err) { clearSuggestion(); }
+      });
+
+      emailInput.addEventListener('input', function() {
+        warnedAbout = '';
+        clearSuggestion();
+      });
+    }
 
     form.addEventListener('submit', function(e) {
       e.preventDefault();
@@ -260,13 +413,34 @@ a{color:var(--red);text-decoration:none}
       errorBox.style.display = 'none';
       successBox.style.display = 'none';
 
-      // Validate email on the client side first
-      var emailInput = document.getElementById('mce-EMAIL');
       var email = (emailInput.value || '').trim();
-      if (!email || email.indexOf('@') === -1 || email.indexOf('.') === -1) {
-        errorBox.textContent = 'Please enter a valid email address.';
-        errorBox.style.display = 'block';
-        return;
+
+      // Check the address before sending it anywhere. If anything in here
+      // goes unexpectedly wrong, we fall through and submit rather than
+      // leaving someone stuck with a button that does nothing.
+      try {
+        if (!looksLikeEmail(email)) {
+          var repair = correctionFor(email);
+          if (repair) { showSuggestion(repair); }
+          errorBox.textContent = 'That email address doesn\u2019t look quite right. Please check it and try again.';
+          errorBox.style.display = 'block';
+          emailInput.focus();
+          return;
+        }
+
+        // The address is well formed but looks like a near-miss on a common
+        // provider. Point it out once; if they submit again, take their word.
+        var better = correctionFor(email);
+        if (better && warnedAbout !== email) {
+          showSuggestion(better);
+          warnedAbout = email;
+          return;
+        }
+
+        clearSuggestion();
+        emailInput.value = email;
+      } catch (err) {
+        // Fall through and let the signup proceed.
       }
 
       // Disable the button while submitting
