@@ -99,8 +99,13 @@ def add_to_mailchimp(email, first_name, newsletter_optin):
     payload = {
         'email_address': email,
         'status_if_new': member_status,
-        'status': member_status,
     }
+    # Only ever push a status UPWARD. If they ticked the box, subscribe them.
+    # If they only wanted the guide, we deliberately do NOT send a status at
+    # all, so an existing subscriber who comes back for the guide and doesn't
+    # tick the box keeps their subscription instead of being silently removed.
+    if newsletter_optin:
+        payload['status'] = 'subscribed'
     if first_name:
         payload['merge_fields'] = {'FNAME': first_name}
 
@@ -113,10 +118,21 @@ def add_to_mailchimp(email, first_name, newsletter_optin):
         )
 
         if response.status_code in (200, 201):
-            # Guide-only downloaders get the NONSUB tag so Karen can filter them.
-            if not newsletter_optin:
-                apply_nonsub_tag(subscriber_hash)
-            return 'added'
+            if newsletter_optin:
+                return 'added'
+
+            # Guide only. Find out what Mailchimp says this person's status is
+            # now, so we don't tag an existing subscriber as a non-subscriber.
+            try:
+                current_status = (response.json() or {}).get('status', '')
+            except Exception:
+                current_status = ''
+
+            if current_status == 'subscribed':
+                return 'already a subscriber, left subscribed'
+
+            apply_nonsub_tag(subscriber_hash)
+            return 'added (guide only, not subscribed)'
 
         print(f'Mailchimp error: {response.status_code} - {response.text}')
         return f'FAILED (Mailchimp said {response.status_code})'
