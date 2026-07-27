@@ -300,6 +300,15 @@ def process_signup(email, first_name, newsletter_optin):
     )
 
 
+# Serve the home page. The root URL is the lead-magnet landing page, so the
+# home page lives at /home. The logo and the Home link on every interior page
+# point here.
+@app.route('/home')
+@app.route('/home.html')
+def home_page():
+    return send_from_directory('.', 'home.html')
+
+
 # Serve the landing page at the root URL
 @app.route('/')
 def home():
@@ -349,6 +358,11 @@ def article_when_the_house_stops_fitting():
     return send_from_directory('.', 'when-the-house-stops-fitting.html')
 
 
+@app.route('/articles/why-downsizing-gets-it-wrong')
+def article_why_downsizing_gets_it_wrong():
+    return send_from_directory('.', 'why-downsizing-gets-it-wrong.html')
+
+
 # Serve the sitemap so search engines can discover every page.
 # Built inline as an explicit XML response (rather than served as a static
 # file) because some automated crawlers reject the static-file response even
@@ -361,6 +375,11 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
     <priority>1.0</priority>
   </url>
   <url>
+    <loc>https://leadtime.news/home</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
     <loc>https://leadtime.news/articles</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
@@ -368,6 +387,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://leadtime.news/articles/when-the-house-stops-fitting</loc>
     <lastmod>2026-06-09</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/why-downsizing-gets-it-wrong</loc>
+    <lastmod>2026-07-27</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
