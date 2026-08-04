@@ -9,8 +9,17 @@ Transition design (July 2026):
   - Guide-only downloaders (didn't tick the box) go to Mailchimp only.
   - Neither service can block the other, and neither can block the
     guide download. The visitor always gets the guide.
+
+Added August 2026 - the unsubscribe listener:
+  beehiiv has no way to email Karen when someone unsubscribes. Instead it
+  can send the details to a web address, which is what the route at the
+  bottom of this file is. It receives the details, works out how long the
+  person had been subscribed and where they originally came from, and
+  emails Karen a plain summary. Nothing about the newsletter, the list or
+  the signup form depends on it; if it breaks, only the email is missed.
 """
 import os
+import hmac
 import hashlib
 import smtplib
 import threading
@@ -50,6 +59,12 @@ BEEHIIV_PUBLICATION_ID = os.environ.get(
 # throws the value away.
 BEEHIIV_FIELD_FIRST_NAME = 'First Name'
 BEEHIIV_FIELD_OPTIN_TIME = 'Opt-in date/time'
+
+# The unsubscribe listener's secret. It sits inside the web address that
+# beehiiv sends unsubscribe details to, so that only beehiiv's messages are
+# acted on. It lives in Render, never in this file, exactly like the API
+# keys above. If it is not set, the listener politely does nothing.
+BEEHIIV_WEBHOOK_SECRET = os.environ.get('BEEHIIV_WEBHOOK_SECRET', '').strip()
 
 # Notification email configuration - pulled from Render environment variables.
 # The .replace(' ', '') on the app password removes any spaces, so the
@@ -426,6 +441,213 @@ Sitemap: https://leadtime.news/sitemap.xml
 @app.route('/robots.txt')
 def robots():
     return Response(ROBOTS_TXT, mimetype='text/plain')
+
+
+# ---------------------------------------------------------------------------
+# THE UNSUBSCRIBE LISTENER
+#
+# beehiiv sends the details of each unsubscribe to the web address at the
+# bottom of this section. Everything here is wrapped so that nothing can
+# affect the website or the signup form.
+# ---------------------------------------------------------------------------
+
+def beehiiv_custom_field(data, wanted_name):
+    """
+    Pull one custom field value out of a beehiiv payload.
+
+    beehiiv sends custom fields as a list of small objects rather than as
+    plain values, so this digs the one we want back out. Returns an empty
+    string if it isn't there.
+    """
+    try:
+        for field in (data.get('custom_fields') or []):
+            if (field.get('name') or '').strip().lower() == wanted_name.strip().lower():
+                return str(field.get('value') or '').strip()
+    except Exception:
+        pass
+    return ''
+
+
+def describe_tenure(subscribed_moment, left_moment):
+    """
+    Turn two dates into a plain phrase like '6 days' or 'about 8 months',
+    so the notification email says how long this person stayed.
+    """
+    try:
+        days = (left_moment - subscribed_moment).days
+    except Exception:
+        return ''
+
+    if days < 0:
+        return ''
+    if days == 0:
+        return 'less than a day'
+    if days == 1:
+        return '1 day'
+    if days < 60:
+        return f'{days} days'
+    if days < 365:
+        return f'about {days // 30} months'
+    if days < 730:
+        return 'about a year'
+    return f'about {days // 365} years'
+
+
+def describe_source(data):
+    """
+    Say in plain English where this subscriber originally came from.
+
+    Signups through Karen's own page are stamped by this file when they are
+    created, so they are recognised by name. Anything else is reported with
+    whatever beehiiv recorded.
+    """
+    source = (data.get('utm_source') or '').strip()
+    medium = (data.get('utm_medium') or '').strip()
+    campaign = (data.get('utm_campaign') or '').strip()
+    channel = (data.get('utm_channel') or '').strip()
+    site = (data.get('referring_site') or '').strip()
+
+    if source == 'leadtime.news':
+        return 'the signup page at leadtime.news'
+
+    parts = []
+    if source:
+        parts.append(source)
+    if campaign:
+        parts.append(f'campaign "{campaign}"')
+    elif medium:
+        parts.append(medium)
+
+    if not parts and site:
+        parts.append(site)
+    if not parts and channel:
+        parts.append(channel)
+
+    return ', '.join(parts) if parts else 'not recorded by beehiiv'
+
+
+def send_unsubscribe_notification(data, left_moment):
+    """
+    Email Karen about one unsubscribe.
+
+    Wrapped in a try/except so nothing that goes wrong here can affect
+    anything else. Never raises.
+    """
+    if not (NOTIFY_GMAIL_ADDRESS and NOTIFY_GMAIL_APP_PASSWORD and NOTIFY_TO_ADDRESS):
+        return
+
+    try:
+        email = (data.get('email') or 'unknown address').strip()
+        first_name = beehiiv_custom_field(data, BEEHIIV_FIELD_FIRST_NAME)
+
+        # When they originally subscribed. beehiiv sends this as a plain
+        # number of seconds, so it has to be turned back into a date.
+        subscribed_line = 'Subscribed: not recorded by beehiiv'
+        try:
+            created_raw = data.get('created')
+            if created_raw:
+                if CALGARY_TZ:
+                    subscribed_moment = datetime.fromtimestamp(int(created_raw), CALGARY_TZ)
+                else:
+                    subscribed_moment = datetime.utcfromtimestamp(int(created_raw))
+                tenure = describe_tenure(subscribed_moment, left_moment)
+                subscribed_on = subscribed_moment.strftime('%B %d, %Y')
+                if tenure:
+                    subscribed_line = f'Subscribed: {subscribed_on} - stayed {tenure}'
+                else:
+                    subscribed_line = f'Subscribed: {subscribed_on}'
+        except Exception as e:
+            print(f'Could not read the subscribe date: {e}')
+
+        message = EmailMessage()
+        message['Subject'] = f'Unsubscribed from Lead Time: {email}'
+        message['From'] = f'Lead Time Signups <{NOTIFY_GMAIL_ADDRESS}>'
+        message['To'] = NOTIFY_TO_ADDRESS
+
+        name_line = f'Name: {first_name}\n' if first_name else ''
+        tags = data.get('tags') or []
+        tags_line = f'Tags: {", ".join(str(t) for t in tags)}\n' if tags else ''
+
+        message.set_content(
+            'Someone unsubscribed from Lead Time.\n'
+            '\n'
+            f'Email: {email}\n'
+            f'{name_line}'
+            f'{subscribed_line}\n'
+            f'Came from: {describe_source(data)}\n'
+            f'{tags_line}'
+            f'Left: {readable_timestamp(left_moment)}\n'
+            '\n'
+            'beehiiv has already removed them from the list, so there is '
+            'nothing you need to do.\n'
+            '\n'
+            'Sent automatically by leadtime.news.'
+        )
+
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=15) as server:
+            server.login(NOTIFY_GMAIL_ADDRESS, NOTIFY_GMAIL_APP_PASSWORD)
+            server.send_message(message)
+
+    except Exception as e:
+        print(f'Unsubscribe notification email failed: {e}')
+
+
+def process_beehiiv_event(payload):
+    """
+    Everything that happens after beehiiv has been told its message was
+    received. Runs in a background thread so beehiiv is never kept waiting.
+    """
+    try:
+        event_type = (payload.get('event_type') or '').strip().lower()
+        data = payload.get('data') or {}
+
+        # Only unsubscribes are of interest. Anything else is noted in the
+        # Render logs and otherwise ignored, so switching on a further event
+        # type in beehiiv by mistake cannot produce confusing emails.
+        if event_type not in ('subscription.deleted',):
+            print(f'beehiiv sent an event we do not act on: {event_type}')
+            return
+
+        send_unsubscribe_notification(data, calgary_now())
+
+    except Exception as e:
+        print(f'Handling the beehiiv event failed: {e}')
+
+
+@app.route('/hooks/beehiiv/<path_secret>', methods=['POST', 'GET'])
+def beehiiv_webhook(path_secret):
+    """
+    The address beehiiv sends unsubscribe details to.
+
+    Anything with the wrong secret in the address is treated as though the
+    page does not exist. Correct messages are acknowledged immediately and
+    handled in the background, because beehiiv only wants to know that its
+    message arrived.
+    """
+    if not BEEHIIV_WEBHOOK_SECRET:
+        return jsonify({'status': 'not configured'}), 404
+
+    if not hmac.compare_digest(path_secret, BEEHIIV_WEBHOOK_SECRET):
+        return jsonify({'status': 'not found'}), 404
+
+    # Opening the address in a browser is a harmless way to check that it
+    # is live before pasting it into beehiiv.
+    if request.method == 'GET':
+        return Response(
+            'The Lead Time unsubscribe listener is running.',
+            mimetype='text/plain'
+        )
+
+    payload = request.get_json(silent=True) or {}
+
+    threading.Thread(
+        target=process_beehiiv_event,
+        args=(payload,),
+        daemon=True
+    ).start()
+
+    # beehiiv wants a 200 back to count the delivery as successful.
+    return jsonify({'status': 'received'}), 200
 
 
 # Handle the signup form submission
