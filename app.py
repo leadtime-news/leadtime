@@ -206,8 +206,11 @@ def add_to_beehiiv(email, first_name, optin_moment):
 
     payload = {
         'email': email,
-        # Never resurrect someone who deliberately unsubscribed.
-        'reactivate_existing': False,
+        # Someone who fills in this form and ticks the box is giving fresh,
+        # timestamped consent, so a person who unsubscribed in the past is
+        # welcomed back rather than blocked. (Changed August 2026; it was
+        # previously False, which silently left returners unsubscribed.)
+        'reactivate_existing': True,
         # Karen's decision: no welcome email.
         'send_welcome_email': False,
         # Karen's decision: no double opt-in. Set explicitly rather than
