@@ -13,18 +13,22 @@ Transition design (July 2026):
 Added August 2026 - the unsubscribe listener:
   beehiiv has no way to email Karen when someone unsubscribes. Instead it
   can send the details to a web address, which is what the route at the
-  bottom of this file is. It receives the details, works out how long the
-  person had been subscribed and where they originally came from, and
-  emails Karen a plain summary. Nothing about the newsletter, the list or
-  the signup form depends on it; if it breaks, only the email is missed.
+  bottom of this file is. It receives the details, waits a quarter of an
+  hour so the reader has time to answer the "Before you go" question, asks
+  beehiiv what they said, and then emails Karen one summary: who left, how
+  long they stayed, where they came from, and why. Nothing about the
+  newsletter, the list or the signup form depends on it; if it breaks, only
+  the email is missed.
 """
 import os
 import hmac
 import hashlib
 import smtplib
 import threading
+import time
 from datetime import datetime
 from email.message import EmailMessage
+from urllib.parse import quote
 
 import requests
 from flask import Flask, request, jsonify, send_from_directory, Response
@@ -59,6 +63,18 @@ BEEHIIV_PUBLICATION_ID = os.environ.get(
 # throws the value away.
 BEEHIIV_FIELD_FIRST_NAME = 'First Name'
 BEEHIIV_FIELD_OPTIN_TIME = 'Opt-in date/time'
+
+# The field the "Before you go" survey writes the chosen reason into. It must
+# match the name in beehiiv exactly, character for character.
+BEEHIIV_FIELD_UNSUB_REASON = 'Unsubscribe reason'
+
+# How long to wait before emailing Karen about an unsubscribe. The survey is
+# shown to the reader AFTER they unsubscribe, so waiting a little while means
+# the notification can include their answer instead of arriving before it
+# exists. 900 seconds is 15 minutes. Set to 0 to send immediately.
+UNSUBSCRIBE_NOTIFICATION_DELAY_SECONDS = int(
+    os.environ.get('UNSUBSCRIBE_NOTIFICATION_DELAY_SECONDS', '900')
+)
 
 # The unsubscribe listener's secret. It sits inside the web address that
 # beehiiv sends unsubscribe details to, so that only beehiiv's messages are
@@ -465,9 +481,52 @@ def beehiiv_custom_field(data, wanted_name):
     try:
         for field in (data.get('custom_fields') or []):
             if (field.get('name') or '').strip().lower() == wanted_name.strip().lower():
-                return str(field.get('value') or '').strip()
+                raw = field.get('value')
+                # A list-type field (like the survey answer) can come back as
+                # an array rather than a plain value.
+                if isinstance(raw, list):
+                    return ', '.join(str(v).strip() for v in raw if str(v).strip())
+                return str(raw or '').strip()
     except Exception:
         pass
+    return ''
+
+
+def fetch_unsubscribe_reason(email, subscription_id):
+    """
+    Ask beehiiv whether this person answered the "Before you go" question.
+
+    Called after the wait, so the answer has had time to arrive. Returns an
+    empty string if they didn't answer or if anything goes wrong. Never raises.
+    """
+    if not (BEEHIIV_API_KEY and BEEHIIV_PUBLICATION_ID):
+        return ''
+
+    base = f'https://api.beehiiv.com/v2/publications/{BEEHIIV_PUBLICATION_ID}/subscriptions'
+    lookups = []
+    if email:
+        lookups.append(f'{base}/by_email/{quote(email, safe="")}')
+    if subscription_id:
+        lookups.append(f'{base}/{subscription_id}')
+
+    for url in lookups:
+        try:
+            response = requests.get(
+                url,
+                headers={'Authorization': f'Bearer {BEEHIIV_API_KEY}'},
+                params={'expand[]': 'custom_fields'},
+                timeout=10
+            )
+            if response.status_code == 200:
+                subscription = (response.json() or {}).get('data') or {}
+                reason = beehiiv_custom_field(subscription, BEEHIIV_FIELD_UNSUB_REASON)
+                if reason:
+                    return reason
+            else:
+                print(f'Reason lookup returned {response.status_code} for {url}')
+        except Exception as e:
+            print(f'Reason lookup failed: {e}')
+
     return ''
 
 
@@ -529,9 +588,10 @@ def describe_source(data):
     return ', '.join(parts) if parts else 'not recorded by beehiiv'
 
 
-def send_unsubscribe_notification(data, left_moment):
+def send_unsubscribe_notification(data, left_moment, reason=''):
     """
-    Email Karen about one unsubscribe.
+    Email Karen about one unsubscribe, including the reason they gave if they
+    answered the "Before you go" question.
 
     Wrapped in a try/except so nothing that goes wrong here can affect
     anything else. Never raises.
@@ -571,6 +631,14 @@ def send_unsubscribe_notification(data, left_moment):
         tags = data.get('tags') or []
         tags_line = f'Tags: {", ".join(str(t) for t in tags)}\n' if tags else ''
 
+        if reason:
+            reason_line = f'Reason given: {reason}\n'
+        else:
+            reason_line = (
+                'Reason given: none - the question is optional and most '
+                'people skip it\n'
+            )
+
         message.set_content(
             'Someone unsubscribed from Lead Time.\n'
             '\n'
@@ -579,6 +647,7 @@ def send_unsubscribe_notification(data, left_moment):
             f'{subscribed_line}\n'
             f'Came from: {describe_source(data)}\n'
             f'{tags_line}'
+            f'{reason_line}'
             f'Left: {readable_timestamp(left_moment)}\n'
             '\n'
             'beehiiv has already removed them from the list, so there is '
@@ -611,7 +680,21 @@ def process_beehiiv_event(payload):
             print(f'beehiiv sent an event we do not act on: {event_type}')
             return
 
-        send_unsubscribe_notification(data, calgary_now())
+        # The moment they left is recorded now, before any waiting, so the
+        # email reports when they actually unsubscribed.
+        left_moment = calgary_now()
+
+        # Wait so the "Before you go" answer has time to arrive, then ask
+        # beehiiv for it.
+        if UNSUBSCRIBE_NOTIFICATION_DELAY_SECONDS > 0:
+            time.sleep(UNSUBSCRIBE_NOTIFICATION_DELAY_SECONDS)
+
+        reason = fetch_unsubscribe_reason(
+            (data.get('email') or '').strip(),
+            (data.get('id') or '').strip()
+        )
+
+        send_unsubscribe_notification(data, left_moment, reason)
 
     except Exception as e:
         print(f'Handling the beehiiv event failed: {e}')
