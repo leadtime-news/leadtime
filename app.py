@@ -227,8 +227,10 @@ def add_to_beehiiv(email, first_name, optin_moment):
         # welcomed back rather than blocked. (Changed August 2026; it was
         # previously False, which silently left returners unsubscribed.)
         'reactivate_existing': True,
-        # Karen's decision: no welcome email.
-        'send_welcome_email': False,
+        # Karen's decision, August 2026: beehiiv sends its welcome email to
+        # every new subscriber. (This was False until the welcome email
+        # existed; leaving it False would have stopped it firing.)
+        'send_welcome_email': True,
         # Karen's decision: no double opt-in. Set explicitly rather than
         # letting beehiiv's publication default decide.
         'double_opt_override': 'off',
