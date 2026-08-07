@@ -399,6 +399,11 @@ def article_why_downsizing_gets_it_wrong():
     return send_from_directory('.', 'why-downsizing-gets-it-wrong.html')
 
 
+@app.route('/articles/starting-the-conversation-about-where-a-parent-will-live')
+def article_starting_the_conversation_about_where_a_parent_will_live():
+    return send_from_directory('.', 'starting-the-conversation-about-where-a-parent-will-live.html')
+
+
 # Serve the sitemap so search engines can discover every page.
 # Built inline as an explicit XML response (rather than served as a static
 # file) because some automated crawlers reject the static-file response even
@@ -429,6 +434,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://leadtime.news/articles/why-downsizing-gets-it-wrong</loc>
     <lastmod>2026-07-27</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/starting-the-conversation-about-where-a-parent-will-live</loc>
+    <lastmod>2026-08-07</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
