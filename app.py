@@ -1,14 +1,14 @@
 """
 Lead Time signup handler.
-Receives form submissions from leadtime.news, adds them to the Mailchimp
-Lead Time audience AND to the beehiiv Lead Time publication, serves the
-static site files, and emails Karen a notification for each signup.
+Receives form submissions from leadtime.news, adds newsletter sign-ups to
+the beehiiv Lead Time publication, serves the static site files, and emails
+Karen a notification for each signup.
 
-Transition design (July 2026):
-  - Newsletter sign-ups go to BOTH Mailchimp and beehiiv.
-  - Guide-only downloaders (didn't tick the box) go to Mailchimp only.
-  - Neither service can block the other, and neither can block the
-    guide download. The visitor always gets the guide.
+Design (August 2026 - Mailchimp removed):
+  - Newsletter sign-ups go to beehiiv.
+  - Guide-only downloaders (didn't tick the box) are not added to any list.
+    Karen is still emailed about every one of them.
+  - Nothing can block the guide download. The visitor always gets the guide.
 
 Added August 2026 - the unsubscribe listener:
   beehiiv has no way to email Karen when someone unsubscribes. Instead it
@@ -22,7 +22,6 @@ Added August 2026 - the unsubscribe listener:
 """
 import os
 import hmac
-import hashlib
 import smtplib
 import threading
 import time
@@ -43,12 +42,6 @@ except Exception:
     CALGARY_TZ = None
 
 app = Flask(__name__, static_folder='.', static_url_path='')
-
-# Mailchimp configuration - all secrets pulled from Render environment variables
-MAILCHIMP_API_KEY = os.environ.get('MAILCHIMP_API_KEY', '')
-MAILCHIMP_AUDIENCE_ID = os.environ.get('MAILCHIMP_AUDIENCE_ID', 'de5f89484c')
-# The data center is the suffix on the API key (e.g. 'us17' from a key ending in '-us17')
-MAILCHIMP_DC = MAILCHIMP_API_KEY.split('-')[-1] if '-' in MAILCHIMP_API_KEY else 'us17'
 
 # beehiiv configuration. The API key is a secret and lives only in Render.
 # The publication ID is not a secret, so it has a default here.
@@ -102,96 +95,6 @@ def readable_timestamp(moment):
     if CALGARY_TZ:
         return moment.strftime('%B %d, %Y at %I:%M %p Calgary time')
     return moment.strftime('%B %d, %Y at %H:%M UTC')
-
-
-def add_to_mailchimp(email, first_name, newsletter_optin):
-    """
-    Add or update this person in the Mailchimp audience.
-
-    Returns a short plain-English status string for the notification email.
-    Never raises.
-    """
-    if not MAILCHIMP_API_KEY:
-        return 'skipped (no Mailchimp key configured)'
-
-    # Mailchimp uses an MD5 hash of the lowercased email as the subscriber's ID
-    subscriber_hash = hashlib.md5(email.encode('utf-8')).hexdigest()
-
-    # The newsletter box controls whether this person actually joins the
-    # newsletter. If they ticked it, they're subscribed. If they only
-    # wanted the guide, their email is still captured in the audience but
-    # marked 'unsubscribed', so they never receive the weekly newsletter.
-    member_status = 'subscribed' if newsletter_optin else 'unsubscribed'
-
-    url = (
-        f'https://{MAILCHIMP_DC}.api.mailchimp.com/3.0/lists/'
-        f'{MAILCHIMP_AUDIENCE_ID}/members/{subscriber_hash}'
-    )
-    payload = {
-        'email_address': email,
-        'status_if_new': member_status,
-    }
-    # Only ever push a status UPWARD. If they ticked the box, subscribe them.
-    # If they only wanted the guide, we deliberately do NOT send a status at
-    # all, so an existing subscriber who comes back for the guide and doesn't
-    # tick the box keeps their subscription instead of being silently removed.
-    if newsletter_optin:
-        payload['status'] = 'subscribed'
-    if first_name:
-        payload['merge_fields'] = {'FNAME': first_name}
-
-    try:
-        response = requests.put(
-            url,
-            json=payload,
-            auth=('anystring', MAILCHIMP_API_KEY),
-            timeout=10
-        )
-
-        if response.status_code in (200, 201):
-            if newsletter_optin:
-                return 'added'
-
-            # Guide only. Find out what Mailchimp says this person's status is
-            # now, so we don't tag an existing subscriber as a non-subscriber.
-            try:
-                current_status = (response.json() or {}).get('status', '')
-            except Exception:
-                current_status = ''
-
-            if current_status == 'subscribed':
-                return 'already a subscriber, left subscribed'
-
-            apply_nonsub_tag(subscriber_hash)
-            return 'added (guide only, not subscribed)'
-
-        print(f'Mailchimp error: {response.status_code} - {response.text}')
-        return f'FAILED (Mailchimp said {response.status_code})'
-
-    except Exception as e:
-        print(f'Request to Mailchimp failed: {e}')
-        return 'FAILED (could not reach Mailchimp)'
-
-
-def apply_nonsub_tag(subscriber_hash):
-    """
-    Tag a guide-only downloader with 'NONSUB' so Karen can see and filter
-    them in Mailchimp. Wrapped in a try/except so it can never affect the
-    signup. The tag is a nice-to-have for Karen's visibility.
-    """
-    try:
-        tag_url = (
-            f'https://{MAILCHIMP_DC}.api.mailchimp.com/3.0/lists/'
-            f'{MAILCHIMP_AUDIENCE_ID}/members/{subscriber_hash}/tags'
-        )
-        requests.post(
-            tag_url,
-            json={'tags': [{'name': 'NONSUB', 'status': 'active'}]},
-            auth=('anystring', MAILCHIMP_API_KEY),
-            timeout=10
-        )
-    except Exception as e:
-        print(f'NONSUB tag failed: {e}')
 
 
 def add_to_beehiiv(email, first_name, optin_moment):
@@ -265,9 +168,9 @@ def add_to_beehiiv(email, first_name, optin_moment):
 
 
 def send_signup_notification(email, first_name, newsletter_optin,
-                             moment, mailchimp_status, beehiiv_status):
+                             moment, beehiiv_status):
     """
-    Email Karen about a signup, including how each service responded.
+    Email Karen about a signup, including how beehiiv responded.
 
     Wrapped in a try/except so no matter what goes wrong here (Gmail down,
     password revoked, network hiccup), nothing else is affected.
@@ -297,11 +200,10 @@ def send_signup_notification(email, first_name, newsletter_optin,
             f'{name_line}'
             f'When: {timestamp}\n'
             '\n'
-            f'Mailchimp: {mailchimp_status}\n'
             f'beehiiv: {beehiiv_status}\n'
             '\n'
-            'If either line above says FAILED, that person still received the '
-            'guide, but you may want to add them to that list by hand.\n'
+            'If the line above says FAILED, that person still received the '
+            'guide, but you may want to add them to beehiiv by hand.\n'
             '\n'
             'Sent automatically by leadtime.news.'
         )
@@ -323,8 +225,6 @@ def process_signup(email, first_name, newsletter_optin):
     """
     moment = calgary_now()
 
-    mailchimp_status = add_to_mailchimp(email, first_name, newsletter_optin)
-
     if newsletter_optin:
         beehiiv_status = add_to_beehiiv(email, first_name, moment)
     else:
@@ -332,7 +232,7 @@ def process_signup(email, first_name, newsletter_optin):
 
     send_signup_notification(
         email, first_name, newsletter_optin,
-        moment, mailchimp_status, beehiiv_status
+        moment, beehiiv_status
     )
 
 
@@ -771,9 +671,9 @@ def subscribe():
     if not email or '@' not in email or '.' not in email:
         return jsonify({'status': 'error', 'message': 'Please enter a valid email address.'}), 400
 
-    # Everything else happens in the background: Mailchimp, beehiiv, and the
-    # notification email. The visitor is sent straight to the guide and never
-    # waits on, or is affected by, any of those three.
+    # Everything else happens in the background: beehiiv and the notification
+    # email. The visitor is sent straight to the guide and never waits on, or
+    # is affected by, either of those.
     threading.Thread(
         target=process_signup,
         args=(email, first_name, newsletter_optin),
