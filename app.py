@@ -304,6 +304,11 @@ def article_starting_the_conversation_about_where_a_parent_will_live():
     return send_from_directory('.', 'starting-the-conversation-about-where-a-parent-will-live.html')
 
 
+@app.route('/articles/what-a-family-needs-to-know-if-someone-steps-in')
+def article_what_a_family_needs_to_know_if_someone_steps_in():
+    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in.html')
+
+
 # Serve the sitemap so search engines can discover every page.
 # Built inline as an explicit XML response (rather than served as a static
 # file) because some automated crawlers reject the static-file response even
@@ -340,6 +345,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://leadtime.news/articles/starting-the-conversation-about-where-a-parent-will-live</loc>
     <lastmod>2026-08-07</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/what-a-family-needs-to-know-if-someone-steps-in</loc>
+    <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
