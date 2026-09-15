@@ -19,6 +19,14 @@ Added August 2026 - the unsubscribe listener:
   long they stayed, where they came from, and why. Nothing about the
   newsletter, the list or the signup form depends on it; if it breaks, only
   the email is missed.
+
+Added September 2026 - signups from the Kintrak sales page:
+  kintrak.ca carries its own Lead Time signup box. It sends its signups
+  here, to the same /subscribe address the leadtime.news form uses, so they
+  are handled identically: same beehiiv setup, same consent record, same
+  notification email. The only difference is that they are stamped as
+  coming from kintrak.ca, in beehiiv and in the notification. Only the
+  kintrak.ca website is allowed to send signups here from another site.
 """
 import os
 import hmac
@@ -82,6 +90,31 @@ NOTIFY_GMAIL_ADDRESS = os.environ.get('NOTIFY_GMAIL_ADDRESS', '').strip()
 NOTIFY_GMAIL_APP_PASSWORD = os.environ.get('NOTIFY_GMAIL_APP_PASSWORD', '').replace(' ', '').strip()
 NOTIFY_TO_ADDRESS = os.environ.get('NOTIFY_TO_ADDRESS', '').strip()
 
+# Where a signup came from. The leadtime.news form sends nothing, so it gets
+# the first entry. The kintrak.ca signup box sends signup_source "kintrak".
+# Any other value is ignored and treated as leadtime.news.
+SIGNUP_SOURCES = {
+    'leadtime': {
+        'utm_source': 'leadtime.news',
+        'utm_medium': 'walkthrough-signup',
+        'referring_site': 'https://leadtime.news/',
+        'label': 'leadtime.news',
+    },
+    'kintrak': {
+        'utm_source': 'kintrak.ca',
+        'utm_medium': 'kintrak-sales-page',
+        'referring_site': 'https://kintrak.ca/',
+        'label': 'the Kintrak sales page (kintrak.ca)',
+    },
+}
+
+# The other websites allowed to send signups to /subscribe. Browsers refuse
+# to let one site send a form to another unless the receiving site names it.
+SIGNUP_ALLOWED_ORIGINS = {
+    'https://kintrak.ca',
+    'https://www.kintrak.ca',
+}
+
 
 def calgary_now():
     """Current time, in Calgary if possible, otherwise UTC."""
@@ -97,7 +130,7 @@ def readable_timestamp(moment):
     return moment.strftime('%B %d, %Y at %H:%M UTC')
 
 
-def add_to_beehiiv(email, first_name, optin_moment):
+def add_to_beehiiv(email, first_name, optin_moment, source='leadtime'):
     """
     Add this person to the beehiiv publication.
 
@@ -113,6 +146,7 @@ def add_to_beehiiv(email, first_name, optin_moment):
         return 'skipped (no beehiiv publication ID configured)'
 
     url = f'https://api.beehiiv.com/v2/publications/{BEEHIIV_PUBLICATION_ID}/subscriptions'
+    stamp = SIGNUP_SOURCES.get(source, SIGNUP_SOURCES['leadtime'])
 
     custom_fields = []
     if first_name:
@@ -138,10 +172,11 @@ def add_to_beehiiv(email, first_name, optin_moment):
         # letting beehiiv's publication default decide.
         'double_opt_override': 'off',
         # So Karen can tell website signups apart from recommendation
-        # network and referral signups in beehiiv.
-        'utm_source': 'leadtime.news',
-        'utm_medium': 'walkthrough-signup',
-        'referring_site': 'https://leadtime.news/',
+        # network and referral signups in beehiiv, and leadtime.news
+        # signups apart from kintrak.ca signups.
+        'utm_source': stamp['utm_source'],
+        'utm_medium': stamp['utm_medium'],
+        'referring_site': stamp['referring_site'],
         'custom_fields': custom_fields,
     }
 
@@ -168,7 +203,7 @@ def add_to_beehiiv(email, first_name, optin_moment):
 
 
 def send_signup_notification(email, first_name, newsletter_optin,
-                             moment, beehiiv_status):
+                             moment, beehiiv_status, source='leadtime'):
     """
     Email Karen about a signup, including how beehiiv responded.
 
@@ -180,13 +215,15 @@ def send_signup_notification(email, first_name, newsletter_optin,
 
     try:
         timestamp = readable_timestamp(moment)
+        stamp = SIGNUP_SOURCES.get(source, SIGNUP_SOURCES['leadtime'])
+        via = ' (via kintrak.ca)' if source == 'kintrak' else ''
 
         message = EmailMessage()
         if newsletter_optin:
-            message['Subject'] = f'New Lead Time subscriber: {email}'
+            message['Subject'] = f'New Lead Time subscriber{via}: {email}'
             intro = 'A new subscriber just joined Lead Time (ticked the newsletter box).'
         else:
-            message['Subject'] = f'Guide download (no newsletter): {email}'
+            message['Subject'] = f'Guide download (no newsletter){via}: {email}'
             intro = ('Someone downloaded the guide but did not tick the newsletter box, '
                      'so they were captured but not subscribed.')
         message['From'] = f'Lead Time Signups <{NOTIFY_GMAIL_ADDRESS}>'
@@ -199,6 +236,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
             f'Email: {email}\n'
             f'{name_line}'
             f'When: {timestamp}\n'
+            f'Signed up from: {stamp["label"]}\n'
             '\n'
             f'beehiiv: {beehiiv_status}\n'
             '\n'
@@ -217,7 +255,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
         print(f'Signup notification email failed: {e}')
 
 
-def process_signup(email, first_name, newsletter_optin):
+def process_signup(email, first_name, newsletter_optin, source='leadtime'):
     """
     Everything that happens after the visitor has been sent on their way
     to the guide. Runs in a background thread so nothing here can delay or
@@ -226,13 +264,13 @@ def process_signup(email, first_name, newsletter_optin):
     moment = calgary_now()
 
     if newsletter_optin:
-        beehiiv_status = add_to_beehiiv(email, first_name, moment)
+        beehiiv_status = add_to_beehiiv(email, first_name, moment, source)
     else:
         beehiiv_status = 'not sent (guide only, no newsletter box ticked)'
 
     send_signup_notification(
         email, first_name, newsletter_optin,
-        moment, beehiiv_status
+        moment, beehiiv_status, source
     )
 
 
@@ -495,6 +533,8 @@ def describe_source(data):
 
     if source == 'leadtime.news':
         return 'the signup page at leadtime.news'
+    if source == 'kintrak.ca':
+        return 'the Lead Time signup box on the Kintrak sales page (kintrak.ca)'
 
     parts = []
     if source:
@@ -660,9 +700,31 @@ def beehiiv_webhook(path_secret):
     return jsonify({'status': 'received'}), 200
 
 
+def allow_signup_origin(response):
+    """
+    Let the kintrak.ca signup box read the answer from /subscribe.
+    Only the sites named in SIGNUP_ALLOWED_ORIGINS are allowed.
+    """
+    origin = request.headers.get('Origin', '')
+    if origin in SIGNUP_ALLOWED_ORIGINS:
+        response.headers['Access-Control-Allow-Origin'] = origin
+        response.headers['Vary'] = 'Origin'
+        response.headers['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response.headers['Access-Control-Allow-Headers'] = 'Content-Type'
+    return response
+
+
 # Handle the signup form submission
-@app.route('/subscribe', methods=['POST'])
+@app.route('/subscribe', methods=['POST', 'OPTIONS'])
 def subscribe():
+    # A browser checks first whether kintrak.ca may send here.
+    if request.method == 'OPTIONS':
+        return allow_signup_origin(Response(status=204))
+    response, code = handle_subscribe()
+    return allow_signup_origin(response), code
+
+
+def handle_subscribe():
     # Get the form data
     data = request.get_json() if request.is_json else request.form
     email = (data.get('email') or '').strip().lower()
@@ -672,6 +734,11 @@ def subscribe():
     # Did the person tick the newsletter box? An unticked checkbox sends
     # nothing at all, so its mere presence (any value) means they opted in.
     newsletter_optin = bool((data.get('newsletter_optin') or '').strip())
+
+    # Which signup box this came from. Only known values count.
+    source = (data.get('signup_source') or '').strip().lower()
+    if source not in SIGNUP_SOURCES:
+        source = 'leadtime'
 
     # Honeypot check: if a bot filled this hidden field, silently fake success.
     # Real humans never see or fill this field. No notification is sent for bots.
@@ -687,7 +754,7 @@ def subscribe():
     # is affected by, either of those.
     threading.Thread(
         target=process_signup,
-        args=(email, first_name, newsletter_optin),
+        args=(email, first_name, newsletter_optin, source),
         daemon=True
     ).start()
 
