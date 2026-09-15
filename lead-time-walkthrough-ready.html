@@ -117,6 +117,17 @@ a{color:var(--red);text-decoration:none}
 .lp-footer-social:hover{opacity:0.7;color:#fff}
 .lp-footer-social svg{width:16px;height:16px;display:block}
 
+/* Kintrak block */
+.lt-kintrak{background:var(--cream);padding:0 2rem 4.5rem}
+.lt-kintrak-card{max-width:600px;margin:0 auto;background:var(--cream-deep);border:1px solid var(--rule);border-radius:4px;padding:2.5rem 2.5rem 2.75rem;text-align:center}
+.lt-kintrak-rule{display:block;width:32px;height:2px;background:var(--red);margin:0 auto 1.75rem}
+.lt-kintrak-card p{font-family:'Source Serif Pro',Georgia,serif;font-size:18px;color:var(--ink-soft);line-height:1.7;margin-bottom:1.25rem}
+.lt-kintrak-card ul{list-style:none;margin:0 auto 1.5rem;padding:0;display:inline-block;text-align:left}
+.lt-kintrak-card li{font-family:'Source Serif Pro',Georgia,serif;font-size:18px;color:var(--ink-soft);line-height:1.6;padding-left:1.1rem;position:relative;margin-bottom:0.35rem}
+.lt-kintrak-card li::before{content:"";position:absolute;left:0;top:0.7em;width:6px;height:6px;border-radius:50%;background:var(--red)}
+.lt-kintrak-btn{display:inline-block;margin-top:0.5rem;padding:14px 28px;background:transparent;color:var(--red);border:2px solid var(--red);font-family:'Inter',sans-serif;font-size:15px;font-weight:600;letter-spacing:0.04em;text-decoration:none;border-radius:4px;transition:background 0.15s,color 0.15s}
+.lt-kintrak-btn:hover{background:var(--red);color:#fff}
+
 /* Mobile */
 @media(max-width:640px){
 .lp-header{padding:1.25rem 1.25rem 0.5rem}
@@ -130,6 +141,9 @@ a{color:var(--red);text-decoration:none}
 .lp-body p{font-size:17px}
 .lp-download-section{padding:1rem 1.25rem 3rem}
 .lp-download-btn{padding:16px 28px;font-size:15px}
+.lt-kintrak{padding:0 1.25rem 3rem}
+.lt-kintrak-card{padding:2rem 1.25rem 2.25rem}
+.lt-kintrak-card p,.lt-kintrak-card li{font-size:17px}
 .lp-footer{padding:2rem 1.25rem 1.25rem}
 .lp-footer-bottom{flex-direction:column;gap:0.75rem}
 }
@@ -165,13 +179,32 @@ a{color:var(--red);text-decoration:none}
 <section class="lp-body">
 <div class="lp-body-inner">
 <p>Below is your free copy of <em>The Aging-in-Place Home Walk-Through</em>.</p>
-<p>Save it somewhere so you can find it later.</p>
+<p>You may want to save a copy so it&rsquo;s easy to find&nbsp;later.</p>
 </div>
 </section>
 
 <!-- Download button -->
 <section class="lp-download-section">
 <a href="/lead_time_walkthrough_0726.pdf" class="lp-download-btn" target="_blank" rel="noopener noreferrer">Download the guide (PDF)</a>
+</section>
+
+<!-- Kintrak -->
+<section class="lt-kintrak">
+<div class="lt-kintrak-card">
+<span class="lt-kintrak-rule"></span>
+<p>Some of the questions families mean to ask, the ones that never seem to find the right moment, can be answered and set down gently in one&nbsp;place.</p>
+<p>This is partly why I created a family readiness organizer called Kintrak.</p>
+<p>It gathers what a family would need to know if someone had to step in to help on short&nbsp;notice:</p>
+<ul>
+<li>the first calls to the people involved</li>
+<li>how the home works and who services&nbsp;what</li>
+<li>health basics</li>
+<li>where the paperwork lives</li>
+<li>and the routines that keep an ordinary day&nbsp;running</li>
+</ul>
+<p>Things go more easily when information is written down now, while there is no reason to&nbsp;hurry.</p>
+<a href="https://kintrak.ca" class="lt-kintrak-btn" target="_blank" rel="noopener noreferrer">Have a peek inside Kintrak</a>
+</div>
 </section>
 
 <!-- Footer (same as landing page) -->
