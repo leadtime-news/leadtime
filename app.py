@@ -115,6 +115,57 @@ SIGNUP_ALLOWED_ORIGINS = {
     'https://www.kintrak.ca',
 }
 
+# Ad labels. Added September 2026 for the Pinterest ads.
+# When a visitor arrives from an ad, the ad's link carries labels such as
+# utm_source=pinterest and utm_campaign=guide-us-sept2026. Both signup boxes
+# (leadtime.news and kintrak.ca) now pass those labels along with the form,
+# as ad_source, ad_medium, ad_campaign and ad_content. When they are present,
+# beehiiv records the ad instead of the plain website stamp, so Karen can see
+# which subscribers came from which campaign and which pin. The page they
+# signed up on is still recorded, as the referring site.
+AD_LABEL_MAX_LENGTH = 60
+
+
+def clean_ad_label(value):
+    """
+    Keep an ad label short and plain: lower-case letters, numbers, dots,
+    hyphens and underscores only. Anything else is dropped, so a strange
+    web address can never put odd text into beehiiv or the email.
+    """
+    value = (value or '').strip().lower()
+    kept = ''.join(ch for ch in value if ch.isascii() and (ch.isalnum() or ch in '._-'))
+    return kept[:AD_LABEL_MAX_LENGTH]
+
+
+def read_ad_labels(data):
+    """
+    The ad labels sent with a signup, or None if the visitor did not arrive
+    from a labelled link.
+    """
+    ad = {
+        'source': clean_ad_label(data.get('ad_source')),
+        'medium': clean_ad_label(data.get('ad_medium')),
+        'campaign': clean_ad_label(data.get('ad_campaign')),
+        'content': clean_ad_label(data.get('ad_content')),
+    }
+    if not ad['source']:
+        return None
+    return ad
+
+
+def describe_ad(ad):
+    """e.g. 'Pinterest ad, campaign guide-us-sept2026, pin step-in'"""
+    if not ad:
+        return ''
+    name = 'Pinterest' if ad['source'] == 'pinterest' else ad['source']
+    kind = ' ad' if ad['medium'] in ('cpc', 'paid', 'ppc', 'paid_social') else ''
+    parts = [f'{name}{kind}']
+    if ad['campaign']:
+        parts.append(f"campaign {ad['campaign']}")
+    if ad['content']:
+        parts.append(f"pin {ad['content']}")
+    return ', '.join(parts)
+
 
 def calgary_now():
     """Current time, in Calgary if possible, otherwise UTC."""
@@ -130,7 +181,7 @@ def readable_timestamp(moment):
     return moment.strftime('%B %d, %Y at %H:%M UTC')
 
 
-def add_to_beehiiv(email, first_name, optin_moment, source='leadtime'):
+def add_to_beehiiv(email, first_name, optin_moment, source='leadtime', ad=None):
     """
     Add this person to the beehiiv publication.
 
@@ -180,6 +231,19 @@ def add_to_beehiiv(email, first_name, optin_moment, source='leadtime'):
         'custom_fields': custom_fields,
     }
 
+    # Came from an ad (September 2026): record the ad instead of the plain
+    # website stamp. beehiiv only lets Karen filter subscribers by source,
+    # medium and campaign, so the pin's label rides along inside the
+    # campaign, e.g. "guide-us-sept2026/step-in". The page they signed up
+    # on stays in referring_site.
+    if ad:
+        payload['utm_source'] = ad['source']
+        payload['utm_medium'] = ad['medium'] or 'paid'
+        campaign = ad['campaign'] or 'no-campaign'
+        if ad['content']:
+            campaign = f"{campaign}/{ad['content']}"
+        payload['utm_campaign'] = campaign
+
     try:
         response = requests.post(
             url,
@@ -203,7 +267,7 @@ def add_to_beehiiv(email, first_name, optin_moment, source='leadtime'):
 
 
 def send_signup_notification(email, first_name, newsletter_optin,
-                             moment, beehiiv_status, source='leadtime'):
+                             moment, beehiiv_status, source='leadtime', ad=None):
     """
     Email Karen about a signup, including how beehiiv responded.
 
@@ -217,6 +281,10 @@ def send_signup_notification(email, first_name, newsletter_optin,
         timestamp = readable_timestamp(moment)
         stamp = SIGNUP_SOURCES.get(source, SIGNUP_SOURCES['leadtime'])
         via = ' (via kintrak.ca)' if source == 'kintrak' else ''
+        if ad:
+            ad_name = 'Pinterest' if ad['source'] == 'pinterest' else ad['source']
+            via = f'{via} (from {ad_name})'
+        ad_line = f'Arrived from: {describe_ad(ad)}\n' if ad else ''
 
         message = EmailMessage()
         if newsletter_optin:
@@ -237,6 +305,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
             f'{name_line}'
             f'When: {timestamp}\n'
             f'Signed up from: {stamp["label"]}\n'
+            f'{ad_line}'
             '\n'
             f'beehiiv: {beehiiv_status}\n'
             '\n'
@@ -255,7 +324,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
         print(f'Signup notification email failed: {e}')
 
 
-def process_signup(email, first_name, newsletter_optin, source='leadtime'):
+def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=None):
     """
     Everything that happens after the visitor has been sent on their way
     to the guide. Runs in a background thread so nothing here can delay or
@@ -264,13 +333,13 @@ def process_signup(email, first_name, newsletter_optin, source='leadtime'):
     moment = calgary_now()
 
     if newsletter_optin:
-        beehiiv_status = add_to_beehiiv(email, first_name, moment, source)
+        beehiiv_status = add_to_beehiiv(email, first_name, moment, source, ad)
     else:
         beehiiv_status = 'not sent (guide only, no newsletter box ticked)'
 
     send_signup_notification(
         email, first_name, newsletter_optin,
-        moment, beehiiv_status, source
+        moment, beehiiv_status, source, ad
     )
 
 
@@ -535,6 +604,9 @@ def describe_source(data):
         return 'the signup page at leadtime.news'
     if source == 'kintrak.ca':
         return 'the Lead Time signup box on the Kintrak sales page (kintrak.ca)'
+    if source == 'pinterest':
+        where = f' (campaign/pin: {campaign})' if campaign else ''
+        return f'a Pinterest ad{where}'
 
     parts = []
     if source:
@@ -740,6 +812,9 @@ def handle_subscribe():
     if source not in SIGNUP_SOURCES:
         source = 'leadtime'
 
+    # Ad labels, if the visitor arrived from a labelled ad link.
+    ad = read_ad_labels(data)
+
     # Honeypot check: if a bot filled this hidden field, silently fake success.
     # Real humans never see or fill this field. No notification is sent for bots.
     if honeypot:
@@ -754,7 +829,7 @@ def handle_subscribe():
     # is affected by, either of those.
     threading.Thread(
         target=process_signup,
-        args=(email, first_name, newsletter_optin, source),
+        args=(email, first_name, newsletter_optin, source, ad),
         daemon=True
     ).start()
 

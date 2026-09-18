@@ -238,6 +238,11 @@ a{color:var(--red);text-decoration:none}
 <div class="response" id="mce-error-response" style="display: none;"></div>
 <div class="response" id="mce-success-response" style="display: none;"></div>
 </div>
+<!-- Ad labels, filled in by the script after the form. Hidden. -->
+<input type="hidden" name="ad_source" value="">
+<input type="hidden" name="ad_medium" value="">
+<input type="hidden" name="ad_campaign" value="">
+<input type="hidden" name="ad_content" value="">
 <!-- Anti-bot honeypot — do not remove. Bots fill this; humans never see it. -->
 <div aria-hidden="true" style="position:absolute;left:-5000px;">
 <input type="text" name="honeypot" tabindex="-1" value="" autocomplete="off">
@@ -248,6 +253,41 @@ a{color:var(--red);text-decoration:none}
 </div>
 </form>
 </div>
+
+<!-- Ad labels (September 2026). When a visitor arrives from a paid ad, the
+     ad's link carries labels such as utm_source=pinterest. This copies them
+     into the hidden fields below so the signup records which ad and pin
+     brought the person. Nothing visible changes. Links without paid-ad
+     labels (the free ads, the newsletter) leave the fields empty. -->
+<script>
+(function () {
+  try {
+    var PAID = ['cpc', 'paid', 'ppc', 'paid_social'];
+    var KEY = 'lt-ad-labels';
+    var q = new URLSearchParams(window.location.search);
+    var labels = null;
+    var medium = (q.get('utm_medium') || '').toLowerCase();
+    if (q.get('utm_source') && PAID.indexOf(medium) !== -1) {
+      labels = {
+        source: q.get('utm_source') || '',
+        medium: q.get('utm_medium') || '',
+        campaign: q.get('utm_campaign') || '',
+        content: q.get('utm_content') || ''
+      };
+      try { sessionStorage.setItem(KEY, JSON.stringify(labels)); } catch (e) {}
+    } else {
+      try { labels = JSON.parse(sessionStorage.getItem(KEY) || 'null'); } catch (e) {}
+    }
+    if (!labels) return;
+    var form = document.getElementById('lead-time-signup-form');
+    if (!form) return;
+    ['source', 'medium', 'campaign', 'content'].forEach(function (k) {
+      var field = form.querySelector('input[name="ad_' + k + '"]');
+      if (field) field.value = labels[k] || '';
+    });
+  } catch (e) {}
+})();
+</script>
 
 <script>
   (function() {
