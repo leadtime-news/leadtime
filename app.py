@@ -106,6 +106,17 @@ SIGNUP_SOURCES = {
         'referring_site': 'https://kintrak.ca/',
         'label': 'the Kintrak sales page (kintrak.ca)',
     },
+    # Added September 2026: the pop-up guide offer on kintrak.ca (the box
+    # that opens as a computer visitor heads for the top of the window, or
+    # from the slim bar on phones and tablets). Kept separate from the box
+    # further down the page so Karen can see whether the pop-up earns its
+    # place.
+    'kintrak-popup': {
+        'utm_source': 'kintrak.ca',
+        'utm_medium': 'kintrak-guide-popup',
+        'referring_site': 'https://kintrak.ca/',
+        'label': 'the pop-up guide offer on the Kintrak sales page (kintrak.ca)',
+    },
 }
 
 # The other websites allowed to send signups to /subscribe. Browsers refuse
@@ -280,7 +291,12 @@ def send_signup_notification(email, first_name, newsletter_optin,
     try:
         timestamp = readable_timestamp(moment)
         stamp = SIGNUP_SOURCES.get(source, SIGNUP_SOURCES['leadtime'])
-        via = ' (via kintrak.ca)' if source == 'kintrak' else ''
+        if source == 'kintrak':
+            via = ' (via kintrak.ca)'
+        elif source == 'kintrak-popup':
+            via = ' (via kintrak.ca pop-up)'
+        else:
+            via = ''
         if ad:
             ad_name = 'Pinterest' if ad['source'] == 'pinterest' else ad['source']
             via = f'{via} (from {ad_name})'
@@ -602,6 +618,8 @@ def describe_source(data):
 
     if source == 'leadtime.news':
         return 'the signup page at leadtime.news'
+    if source == 'kintrak.ca' and medium == 'kintrak-guide-popup':
+        return 'the pop-up guide offer on the Kintrak sales page (kintrak.ca)'
     if source == 'kintrak.ca':
         return 'the Lead Time signup box on the Kintrak sales page (kintrak.ca)'
     if source == 'pinterest':
