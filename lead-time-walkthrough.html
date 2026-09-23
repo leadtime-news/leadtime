@@ -254,20 +254,18 @@ a{color:var(--red);text-decoration:none}
 </form>
 </div>
 
-<!-- Ad labels (September 2026). When a visitor arrives from a paid ad, the
-     ad's link carries labels such as utm_source=pinterest. This copies them
-     into the hidden fields below so the signup records which ad and pin
-     brought the person. Nothing visible changes. Links without paid-ad
-     labels (the free ads, the newsletter) leave the fields empty. -->
+<!-- Ad labels (September 2026). When a visitor arrives on a labelled link,
+     such as a Pinterest ad (utm_source=pinterest) or a newsletter listing
+     (utm_source=capitaldaily), this copies the labels into the hidden fields
+     below so the signup records what brought the person. Nothing visible
+     changes. Visitors who arrive without labels leave the fields empty. -->
 <script>
 (function () {
   try {
-    var PAID = ['cpc', 'paid', 'ppc', 'paid_social'];
     var KEY = 'lt-ad-labels';
     var q = new URLSearchParams(window.location.search);
     var labels = null;
-    var medium = (q.get('utm_medium') || '').toLowerCase();
-    if (q.get('utm_source') && PAID.indexOf(medium) !== -1) {
+    if (q.get('utm_source')) {
       labels = {
         source: q.get('utm_source') || '',
         medium: q.get('utm_medium') || '',
