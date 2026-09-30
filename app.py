@@ -27,6 +27,23 @@ Added September 2026 - signups from the Kintrak sales page:
   notification email. The only difference is that they are stamped as
   coming from kintrak.ca, in beehiiv and in the notification. Only the
   kintrak.ca website is allowed to send signups here from another site.
+
+Added September 30, 2026 - current subscribers are recognised:
+  Before emailing Karen, this file now asks beehiiv whether the address is
+  already on the list. The notification subject then says which of these
+  it is:
+    - New Lead Time subscriber                       (truly new)
+    - Guide download by current subscriber            (already on the list,
+                                                        ticked the box)
+    - Guide download (no newsletter) by current subscriber
+                                                      (already on the list,
+                                                        did not tick the box)
+    - Returning subscriber (had unsubscribed)         (left before, ticked
+                                                        the box, rejoining)
+  Someone already on the list is left exactly as they are in beehiiv, so
+  their original signup date, source and consent record are not
+  overwritten, and they are not sent the welcome email a second time.
+  If beehiiv cannot be asked, everything works exactly as it did before.
 """
 import os
 import hmac
@@ -192,6 +209,71 @@ def readable_timestamp(moment):
     return moment.strftime('%B %d, %Y at %H:%M UTC')
 
 
+def moment_from_beehiiv_seconds(raw):
+    """
+    beehiiv gives dates as a plain count of seconds. Turn one back into a
+    date, in Calgary if possible. Returns None if it can't be read.
+    """
+    try:
+        if not raw:
+            return None
+        if CALGARY_TZ:
+            return datetime.fromtimestamp(int(raw), CALGARY_TZ)
+        return datetime.utcfromtimestamp(int(raw))
+    except Exception:
+        return None
+
+
+def check_existing_subscriber(email):
+    """
+    Ask beehiiv whether this address is already on the Lead Time list.
+
+    Returns two things:
+      - one of 'new', 'current', 'former' or 'unknown'
+          new      - beehiiv has never heard of this address
+          current  - on the list now
+          former   - was on the list and unsubscribed
+          unknown  - beehiiv could not be asked; behave exactly as before
+      - the date they first subscribed, or None
+
+    Never raises.
+    """
+    if not (BEEHIIV_API_KEY and BEEHIIV_PUBLICATION_ID and email):
+        return 'unknown', None
+
+    url = (f'https://api.beehiiv.com/v2/publications/{BEEHIIV_PUBLICATION_ID}'
+           f'/subscriptions/by_email/{quote(email, safe="")}')
+    try:
+        response = requests.get(
+            url,
+            headers={'Authorization': f'Bearer {BEEHIIV_API_KEY}'},
+            timeout=10
+        )
+        if response.status_code == 404:
+            return 'new', None
+        if response.status_code != 200:
+            print(f'Existing-subscriber check returned {response.status_code}')
+            return 'unknown', None
+
+        subscription = (response.json() or {}).get('data') or {}
+        if not subscription:
+            return 'new', None
+
+        first_subscribed = moment_from_beehiiv_seconds(subscription.get('created'))
+        status = (subscription.get('status') or '').strip().lower()
+
+        # "inactive" is beehiiv's word for unsubscribed. Every other status
+        # (active, validating, pending, paused and so on) means they are
+        # still on the list.
+        if status == 'inactive':
+            return 'former', first_subscribed
+        return 'current', first_subscribed
+
+    except Exception as e:
+        print(f'Existing-subscriber check failed: {e}')
+        return 'unknown', None
+
+
 def add_to_beehiiv(email, first_name, optin_moment, source='leadtime', ad=None):
     """
     Add this person to the beehiiv publication.
@@ -278,9 +360,11 @@ def add_to_beehiiv(email, first_name, optin_moment, source='leadtime', ad=None):
 
 
 def send_signup_notification(email, first_name, newsletter_optin,
-                             moment, beehiiv_status, source='leadtime', ad=None):
+                             moment, beehiiv_status, source='leadtime', ad=None,
+                             existing='unknown', first_subscribed=None):
     """
-    Email Karen about a signup, including how beehiiv responded.
+    Email Karen about a signup, including how beehiiv responded and whether
+    this person was already on the list.
 
     Wrapped in a try/except so no matter what goes wrong here (Gmail down,
     password revoked, network hiccup), nothing else is affected.
@@ -302,16 +386,44 @@ def send_signup_notification(email, first_name, newsletter_optin,
             via = f'{via} (from {ad_name})'
         ad_line = f'Arrived from: {describe_ad(ad)}\n' if ad else ''
 
+        first_date = first_subscribed.strftime('%B %d, %Y') if first_subscribed else ''
+
         message = EmailMessage()
-        if newsletter_optin:
+        if newsletter_optin and existing == 'current':
+            message['Subject'] = f'Guide download by current subscriber{via}: {email}'
+            intro = ('Someone who is ALREADY a Lead Time subscriber downloaded the '
+                     'guide and ticked the newsletter box again. Nothing has changed '
+                     'on your list.')
+        elif newsletter_optin and existing == 'former':
+            message['Subject'] = f'Returning subscriber (had unsubscribed){via}: {email}'
+            intro = ('Someone who unsubscribed from Lead Time in the past just '
+                     'ticked the newsletter box and has rejoined.')
+        elif newsletter_optin:
             message['Subject'] = f'New Lead Time subscriber{via}: {email}'
             intro = 'A new subscriber just joined Lead Time (ticked the newsletter box).'
+        elif existing == 'current':
+            message['Subject'] = f'Guide download (no newsletter) by current subscriber{via}: {email}'
+            intro = ('Someone who is ALREADY a Lead Time subscriber downloaded the '
+                     'guide. They did not tick the box, but they are still on your '
+                     'list. Nothing has changed.')
         else:
             message['Subject'] = f'Guide download (no newsletter){via}: {email}'
             intro = ('Someone downloaded the guide but did not tick the newsletter box, '
                      'so they were captured but not subscribed.')
         message['From'] = f'Lead Time Signups <{NOTIFY_GMAIL_ADDRESS}>'
         message['To'] = NOTIFY_TO_ADDRESS
+
+        if existing == 'current':
+            history_line = (f'On your list since: {first_date}\n' if first_date
+                            else 'On your list since: date not recorded by beehiiv\n')
+        elif existing == 'former':
+            history_line = (f'First subscribed: {first_date} (and later unsubscribed)\n'
+                            if first_date else 'Had subscribed before and later unsubscribed\n')
+        elif existing == 'unknown':
+            history_line = ('Already a subscriber? Could not check beehiiv this time, '
+                            'so this email may call a current subscriber new.\n')
+        else:
+            history_line = ''
 
         name_line = f'Name: {first_name}\n' if first_name else ''
         message.set_content(
@@ -322,6 +434,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
             f'When: {timestamp}\n'
             f'Signed up from: {stamp["label"]}\n'
             f'{ad_line}'
+            f'{history_line}'
             '\n'
             f'beehiiv: {beehiiv_status}\n'
             '\n'
@@ -348,14 +461,25 @@ def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=No
     """
     moment = calgary_now()
 
-    if newsletter_optin:
+    # Is this person already on the list? (Added September 30, 2026.)
+    existing, first_subscribed = check_existing_subscriber(email)
+
+    if newsletter_optin and existing == 'current':
+        # Already subscribed: leave them exactly as they are, so their
+        # original signup date, source and consent record stay intact and
+        # they are not sent the welcome email twice.
+        beehiiv_status = 'already on your list, so nothing was changed'
+    elif newsletter_optin:
         beehiiv_status = add_to_beehiiv(email, first_name, moment, source, ad)
+    elif existing == 'current':
+        beehiiv_status = 'already on your list (guide only this time, nothing changed)'
     else:
         beehiiv_status = 'not sent (guide only, no newsletter box ticked)'
 
     send_signup_notification(
         email, first_name, newsletter_optin,
-        moment, beehiiv_status, source, ad
+        moment, beehiiv_status, source, ad,
+        existing, first_subscribed
     )
 
 
