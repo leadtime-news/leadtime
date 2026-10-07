@@ -556,6 +556,14 @@ def article_what_a_family_needs_to_know_if_someone_steps_in():
     return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in.html')
 
 
+# Recipes. Added October 2026 for the Thanksgiving edition. A recipe page is
+# reached from the newsletter rather than the menu, so it has its own address
+# under /recipes/.
+@app.route('/recipes/family-favourite-apple-crisp')
+def recipe_family_favourite_apple_crisp():
+    return send_from_directory('.', 'family-favourite-apple-crisp.html')
+
+
 # Serve the sitemap so search engines can discover every page.
 # Built inline as an explicit XML response (rather than served as a static
 # file) because some automated crawlers reject the static-file response even
@@ -600,6 +608,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>2026-09-08</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/recipes/family-favourite-apple-crisp</loc>
+    <lastmod>2026-10-07</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.5</priority>
   </url>
   <url>
     <loc>https://leadtime.news/about</loc>
