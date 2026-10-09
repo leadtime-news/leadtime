@@ -44,6 +44,12 @@ Added September 30, 2026 - current subscribers are recognised:
   their original signup date, source and consent record are not
   overwritten, and they are not sent the welcome email a second time.
   If beehiiv cannot be asked, everything works exactly as it did before.
+
+Added October 2026 - the pop-up guide offer on leadtime.news pages:
+  Pages such as the apple crisp recipe carry a pop-up offering the guide.
+  Its signups arrive here stamped "site-popup", and they also say which page
+  they came from, so the notification email can name the page. Everything
+  else about them is handled exactly like any other signup.
 """
 import os
 import hmac
@@ -134,7 +140,28 @@ SIGNUP_SOURCES = {
         'referring_site': 'https://kintrak.ca/',
         'label': 'the pop-up guide offer on the Kintrak sales page (kintrak.ca)',
     },
+    # Added October 2026: the pop-up guide offer on leadtime.news pages other
+    # than the landing page (the apple crisp recipe first, the gift guide
+    # later). Which page it was is sent along separately as signup_page.
+    'site-popup': {
+        'utm_source': 'leadtime.news',
+        'utm_medium': 'site-popup',
+        'referring_site': 'https://leadtime.news/',
+        'label': 'the pop-up guide offer on a leadtime.news page',
+    },
 }
+
+
+def clean_page_path(value):
+    """
+    The page a pop-up signup came from, e.g. '/recipes/family-favourite-apple-crisp'.
+    Kept to plain web-address characters so nothing odd can reach the email.
+    """
+    value = (value or '').strip().lower().split('?')[0].split('#')[0]
+    kept = ''.join(ch for ch in value if ch.isascii() and (ch.isalnum() or ch in '/-_.'))
+    if not kept.startswith('/'):
+        return ''
+    return kept[:120]
 
 # The other websites allowed to send signups to /subscribe. Browsers refuse
 # to let one site send a form to another unless the receiving site names it.
@@ -361,7 +388,7 @@ def add_to_beehiiv(email, first_name, optin_moment, source='leadtime', ad=None):
 
 def send_signup_notification(email, first_name, newsletter_optin,
                              moment, beehiiv_status, source='leadtime', ad=None,
-                             existing='unknown', first_subscribed=None):
+                             existing='unknown', first_subscribed=None, page=''):
     """
     Email Karen about a signup, including how beehiiv responded and whether
     this person was already on the list.
@@ -379,12 +406,15 @@ def send_signup_notification(email, first_name, newsletter_optin,
             via = ' (via kintrak.ca)'
         elif source == 'kintrak-popup':
             via = ' (via kintrak.ca pop-up)'
+        elif source == 'site-popup':
+            via = ' (via pop-up on leadtime.news)'
         else:
             via = ''
         if ad:
             ad_name = 'Pinterest' if ad['source'] == 'pinterest' else ad['source']
             via = f'{via} (from {ad_name})'
         ad_line = f'Arrived from: {describe_ad(ad)}\n' if ad else ''
+        page_line = f'Page: https://leadtime.news{page}\n' if page else ''
 
         first_date = first_subscribed.strftime('%B %d, %Y') if first_subscribed else ''
 
@@ -433,6 +463,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
             f'{name_line}'
             f'When: {timestamp}\n'
             f'Signed up from: {stamp["label"]}\n'
+            f'{page_line}'
             f'{ad_line}'
             f'{history_line}'
             '\n'
@@ -453,7 +484,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
         print(f'Signup notification email failed: {e}')
 
 
-def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=None):
+def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=None, page=''):
     """
     Everything that happens after the visitor has been sent on their way
     to the guide. Runs in a background thread so nothing here can delay or
@@ -479,7 +510,7 @@ def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=No
     send_signup_notification(
         email, first_name, newsletter_optin,
         moment, beehiiv_status, source, ad,
-        existing, first_subscribed
+        existing, first_subscribed, page
     )
 
 
@@ -611,7 +642,7 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://leadtime.news/recipes/family-favourite-apple-crisp</loc>
-    <lastmod>2026-10-07</lastmod>
+    <lastmod>2026-10-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
   </url>
@@ -754,6 +785,8 @@ def describe_source(data):
     channel = (data.get('utm_channel') or '').strip()
     site = (data.get('referring_site') or '').strip()
 
+    if source == 'leadtime.news' and medium == 'site-popup':
+        return 'the pop-up guide offer on a leadtime.news page'
     if source == 'leadtime.news':
         return 'the signup page at leadtime.news'
     if source == 'kintrak.ca' and medium == 'kintrak-guide-popup':
@@ -762,7 +795,9 @@ def describe_source(data):
         return 'the Lead Time signup box on the Kintrak sales page (kintrak.ca)'
     if source == 'pinterest':
         where = f' (campaign/pin: {campaign})' if campaign else ''
-        return f'a Pinterest ad{where}'
+        if medium in ('cpc', 'paid', 'ppc', 'paid_social'):
+            return f'a Pinterest ad{where}'
+        return f'Pinterest{where}'
 
     parts = []
     if source:
@@ -971,6 +1006,9 @@ def handle_subscribe():
     # Ad labels, if the visitor arrived from a labelled ad link.
     ad = read_ad_labels(data)
 
+    # The page a pop-up signup came from (October 2026). Blank otherwise.
+    page = clean_page_path(data.get('signup_page')) if source == 'site-popup' else ''
+
     # Honeypot check: if a bot filled this hidden field, silently fake success.
     # Real humans never see or fill this field. No notification is sent for bots.
     if honeypot:
@@ -985,7 +1023,7 @@ def handle_subscribe():
     # is affected by, either of those.
     threading.Thread(
         target=process_signup,
-        args=(email, first_name, newsletter_optin, source, ad),
+        args=(email, first_name, newsletter_optin, source, ad, page),
         daemon=True
     ).start()
 
