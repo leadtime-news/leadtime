@@ -20,6 +20,15 @@
   gtag('js', new Date());
   gtag('config', 'G-8W8DPK41PH');
 </script>
+<!-- No pop-up for readers arriving from the newsletter (links ending ?from=newsletter) -->
+<script>
+  try {
+    var ltFrom = new URLSearchParams(window.location.search).get('from');
+    if (ltFrom === 'leadtime' || ltFrom === 'newsletter') {
+      document.documentElement.className += ' came-from-leadtime';
+    }
+  } catch (e) {}
+</script>
 <link rel="icon" type="image/x-icon" href="/favicon.ico">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -103,7 +112,7 @@ a{color:var(--red);text-decoration:none}
 .lt-body h2{text-wrap:balance;font-family:'Source Serif Pro',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);line-height:1.25;margin:2.75rem 0 1.25rem}
 .lt-body ul{list-style:none;margin:0 0 1.5rem;padding:0}
 .lt-body li{font-family:'Source Serif Pro',Georgia,serif;font-size:18px;color:var(--ink-soft);line-height:1.7;padding:0.5rem 0 0.5rem 1.5rem;position:relative}
-.lt-body li::before{content:"";position:absolute;left:0;top:1.4rem;width:8px;height:2px;background:var(--red)}
+.lt-body li::before{content:"";position:absolute;left:0;top:calc(1.4rem - 3px);width:7px;height:7px;border-radius:50%;background:var(--red)}
 .lt-pull{font-family:'Source Serif Pro',Georgia,serif;font-size:21px;font-style:italic;color:var(--ink);line-height:1.5;text-align:center;margin:2.5rem auto;padding:0 1rem;max-width:540px}
 .lt-pull::before,.lt-pull::after{content:"";display:block;width:40px;height:2px;background:var(--red);margin:0 auto}
 .lt-pull::before{margin-bottom:1.5rem}
@@ -140,6 +149,46 @@ a{color:var(--red);text-decoration:none}
 .lp-footer{padding:2rem 1.25rem 1.25rem}
 .lp-footer-bottom{flex-direction:column;gap:0.75rem}
 }
+
+/* Guide offer pop-up (October 2026). Same behaviour as the kintrak.ca pop-up:
+   on a computer it opens once, as the mouse heads for the top of the window;
+   on phones and tablets a slim bar rises from the bottom and opens the same box. */
+.lt-pop{position:fixed;inset:0;z-index:1000;display:none;align-items:center;justify-content:center;padding:16px;background:rgba(20,18,16,.55)}
+.lt-pop.open{display:flex}
+.lt-pop-card{position:relative;width:100%;max-width:600px;max-height:calc(100% - 8px);overflow:auto;background:var(--cream);border-radius:6px;box-shadow:0 18px 50px rgba(0,0,0,.25);padding:40px 44px 36px}
+.lt-pop-x{position:absolute;top:10px;right:12px;width:40px;height:40px;border:0;background:none;font-size:28px;line-height:1;color:var(--ink-muted);cursor:pointer;border-radius:50%}
+.lt-pop-x:hover,.lt-pop-x:focus{background:var(--cream-deep);color:var(--ink)}
+.lt-pop-lead{font-family:'Source Serif Pro',Georgia,serif;font-style:italic;font-size:18px;color:var(--red);line-height:1.5;margin:0 0 1rem;padding-right:28px}
+.lt-pop-label{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;color:var(--red);text-transform:uppercase;letter-spacing:.16em;margin-bottom:.5rem}
+.lt-pop-h{text-wrap:balance;font-family:'Source Serif Pro',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);line-height:1.25;margin-bottom:.6rem}
+.lt-pop-intro{font-family:'Source Serif Pro',Georgia,serif;font-size:17px;color:var(--ink-soft);line-height:1.6;margin-bottom:1.25rem}
+.lt-field{margin-bottom:1rem}
+.lt-field label{display:block;font-family:'Inter',sans-serif;font-size:14px;font-weight:500;color:var(--ink);margin-bottom:.35rem}
+.lt-field label .req{color:var(--red)}
+.lt-field input{width:100%;font-family:'Source Serif Pro',Georgia,serif;font-size:17px;color:var(--ink);padding:.6em .75em;border:1px solid #c9c2b2;border-radius:3px;background:#fff}
+.lt-field input:focus{outline:2px solid var(--red);outline-offset:1px;border-color:var(--red)}
+.lt-suggest{display:none;margin-top:.5rem;padding:.6em .8em;background:#fff;border:1px solid var(--rule);border-radius:3px;font-family:'Inter',sans-serif;font-size:14px;color:var(--ink-soft)}
+.lt-suggest button{background:none;border:0;padding:0;margin:0;font:inherit;color:var(--red);font-weight:600;text-decoration:underline;cursor:pointer}
+.lt-optin{display:flex;align-items:flex-start;gap:12px;padding:.9rem 1rem;margin:.3rem 0 1.25rem;background:#fff;border:1px solid var(--rule);border-radius:3px}
+.lt-optin input{width:19px;height:19px;min-width:19px;margin:3px 0 0;accent-color:var(--red);cursor:pointer}
+.lt-optin label{font-family:'Inter',sans-serif;font-size:14px;line-height:1.55;color:var(--ink);cursor:pointer}
+.lt-optin label .lead{font-weight:600}
+.lt-error{display:none;margin:0 0 1rem;padding:.6em .8em;background:#fdf2f2;color:#8a2733;border:1px solid #f0c4c9;border-radius:3px;font-family:'Inter',sans-serif;font-size:14px}
+.lt-hp{position:absolute;left:-5000px}
+.lt-pop .lt-btn{border:0;cursor:pointer;width:100%;text-align:center}
+.lt-pop .lt-btn[disabled]{opacity:.7;cursor:default}
+.lt-pop-done{display:none}
+.lt-pop-done p{font-family:'Source Serif Pro',Georgia,serif;font-size:17px;color:var(--ink-soft);line-height:1.6;margin-bottom:1.25rem}
+.lt-bar{position:fixed;left:0;right:0;bottom:0;z-index:999;display:none;align-items:center;gap:12px;padding:12px 14px calc(12px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--cream);box-shadow:0 -6px 20px rgba(0,0,0,.18);transform:translateY(100%);transition:transform .45s ease;font-family:'Inter',sans-serif}
+.lt-bar.show{display:flex}
+.lt-bar.up{transform:none}
+.lt-bar-text{flex:1;font-size:15px;line-height:1.35}
+.lt-bar-text b{font-weight:600}
+.lt-bar-go{flex:none;border:0;border-radius:4px;background:var(--red);color:#fff;font:inherit;font-size:14px;font-weight:600;padding:.6em .9em;cursor:pointer}
+.lt-bar-x{flex:none;width:36px;height:36px;border:0;background:none;color:var(--cream);font-size:24px;line-height:1;cursor:pointer}
+@media(max-width:640px){.lt-pop-card{padding:34px 22px 28px}.lt-pop-h{font-size:22px}}
+@media(max-width:380px){.lt-bar{gap:8px;padding-left:12px;padding-right:8px}.lt-bar-text{font-size:14px}.lt-bar-go{font-size:13px;padding:.55em .7em}.lt-bar-x{width:30px}}
+@media print{.lt-pop,.lt-bar{display:none!important}}
 </style>
 </head>
 <body>
@@ -285,6 +334,319 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 </div>
 </div>
 </footer>
+
+<!-- Guide offer pop-up and phone/tablet bar (October 2026). Copied from the
+     kintrak.ca pop-up. Signups go to /subscribe stamped "site-popup", with this
+     page's address, so the notification email names the page. -->
+<div class="lt-pop" id="lt-pop" role="dialog" aria-modal="true" aria-labelledby="lt-pop-h">
+<div class="lt-pop-card">
+<button type="button" class="lt-pop-x" id="lt-pop-x" aria-label="Close">&times;</button>
+<div id="lt-pop-body">
+<p class="lt-pop-lead">Whether you are thinking about your own home, or helping your parents with theirs, here&rsquo;s a free guide to&nbsp;help.</p>
+<div class="lt-pop-label">Free guide</div>
+<h2 class="lt-pop-h" id="lt-pop-h">The Aging-in-Place Home Walk&#8209;Through&nbsp;Guide</h2>
+<p class="lt-pop-intro">A structured set of questions to help you notice what often goes unnoticed: whether a home could support independent living. Use it in your own home, walk through a parent&rsquo;s home together, or bring it along to one you&rsquo;re&nbsp;considering.</p>
+<form id="lt-pop-form" novalidate>
+<div class="lt-field">
+<label for="lt-pop-email">Email address <span class="req">*</span></label>
+<input type="email" name="email" id="lt-pop-email" autocomplete="email" required>
+<div class="lt-suggest" id="lt-pop-suggest" aria-live="polite"></div>
+</div>
+<div class="lt-field">
+<label for="lt-pop-fname">First name</label>
+<input type="text" name="first_name" id="lt-pop-fname" autocomplete="given-name">
+</div>
+<div class="lt-optin">
+<input type="checkbox" name="newsletter_optin" id="lt-pop-optin" value="yes">
+<label for="lt-pop-optin"><span class="lead">Add me to Lead Time, the free weekly newsletter about planning ahead for aging in place.</span> It's quicker to read than your coffee is to finish. Leave whenever you like, with no&nbsp;hard&nbsp;feelings.</label>
+</div>
+<div class="lt-hp" aria-hidden="true"><input type="text" name="honeypot" tabindex="-1" value="" autocomplete="off"></div>
+<input type="hidden" name="signup_source" value="site-popup">
+<input type="hidden" name="signup_page" value="">
+<input type="hidden" name="ad_source" value="">
+<input type="hidden" name="ad_medium" value="">
+<input type="hidden" name="ad_campaign" value="">
+<input type="hidden" name="ad_content" value="">
+<div class="lt-error" id="lt-pop-error" role="alert"></div>
+<button type="submit" class="lt-btn" id="lt-pop-submit">Please send me the guide</button>
+</form>
+</div>
+<div class="lt-pop-done" id="lt-pop-done" aria-live="polite">
+<div class="lt-pop-label">Free guide</div>
+<h2 class="lt-pop-h">Thank you. Your guide is ready.</h2>
+<p>Your walk-through guide is waiting on the next page.</p>
+<a class="lt-btn" href="/lead-time-walkthrough-ready" target="_blank" rel="noopener">Open your guide</a>
+</div>
+</div>
+</div>
+<div class="lt-bar" id="lt-bar" aria-live="polite">
+<div class="lt-bar-text"><b>Free guide</b> for your home, or your parents&rsquo;&nbsp;home</div>
+<button type="button" class="lt-bar-go" id="lt-bar-go">Take a look</button>
+<button type="button" class="lt-bar-x" id="lt-bar-x" aria-label="No thanks">&times;</button>
+</div>
+
+<script>
+(function () {
+  try {
+    var DONE_KEY = 'lt-guide-offer-done';
+    var WAIT_COMPUTER = 5000;   // on the page this long before it can open
+    var WAIT_TOUCH = 8000;      // phones and tablets: when the bar rises
+    var SIGNUP_ADDRESS = '/subscribe';
+
+    var form = document.getElementById('lt-pop-form');
+    var pop = document.getElementById('lt-pop');
+    var bar = document.getElementById('lt-bar');
+    if (!form || !pop || !bar) return;
+
+    // Which page this is, so the notification email can name it.
+    form.querySelector('input[name="signup_page"]').value = window.location.pathname;
+
+    // Labels from a tagged link (for example a Pinterest pin), remembered for
+    // this visit. The form's own name replaces the link's medium, so beehiiv
+    // shows e.g. "pinterest / site-popup" and the pin's campaign.
+    var labels = null;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      if (q.get('utm_source')) {
+        labels = { source: q.get('utm_source') || '', medium: q.get('utm_medium') || '',
+                   campaign: q.get('utm_campaign') || '', content: q.get('utm_content') || '' };
+        try { sessionStorage.setItem('lt-ad-labels', JSON.stringify(labels)); } catch (e) {}
+      } else {
+        try { labels = JSON.parse(sessionStorage.getItem('lt-ad-labels') || 'null'); } catch (e) {}
+      }
+    } catch (e) {}
+    if (labels && labels.source) {
+      form.querySelector('input[name="ad_source"]').value = labels.source;
+      form.querySelector('input[name="ad_medium"]').value = 'site-popup';
+      form.querySelector('input[name="ad_campaign"]').value = labels.campaign || '';
+      form.querySelector('input[name="ad_content"]').value = labels.content || '';
+    }
+
+    // ---- Email typo catching, the same as the other signup forms ----
+    var submitBtn = document.getElementById('lt-pop-submit');
+    var errorBox = document.getElementById('lt-pop-error');
+    var emailInput = document.getElementById('lt-pop-email');
+    var suggestBox = document.getElementById('lt-pop-suggest');
+    var body = document.getElementById('lt-pop-body');
+    var done = document.getElementById('lt-pop-done');
+
+    var KNOWN_DOMAINS = [
+      'gmail.com', 'googlemail.com',
+      'hotmail.com', 'hotmail.ca', 'outlook.com', 'outlook.ca',
+      'live.com', 'live.ca', 'msn.com',
+      'yahoo.com', 'yahoo.ca', 'ymail.com',
+      'icloud.com', 'me.com', 'mac.com',
+      'aol.com', 'protonmail.com', 'proton.me',
+      'shaw.ca', 'telus.net', 'telus.com', 'sympatico.ca',
+      'rogers.com', 'bell.net', 'bell.ca', 'cogeco.ca',
+      'videotron.ca', 'eastlink.ca', 'xplornet.com',
+      // U.S. internet and phone company addresses, including older ones
+      // many readers have kept for years
+      'att.net', 'sbcglobal.net', 'bellsouth.net', 'pacbell.net',
+      'swbell.net', 'ameritech.net', 'prodigy.net',
+      'comcast.net', 'verizon.net', 'cox.net', 'charter.net',
+      'spectrum.net', 'roadrunner.com', 'twc.com',
+      'frontier.com', 'centurylink.net', 'windstream.net',
+      'optonline.net', 'earthlink.net', 'juno.com', 'netzero.net',
+      'rocketmail.com', 'mail.com', 'gmx.com',
+      // Forwarding services (Firefox Relay, DuckDuckGo, Apple). Listed so
+      // they are never mistaken for a typo of something else.
+      'mozmail.com', 'duck.com', 'privaterelay.appleid.com'
+    ];
+
+    function looksLikeEmail(v) {
+      if (!v) return false;
+      if (/[\s,;]/.test(v)) return false;
+      if (v.split('@').length !== 2) return false;
+      if (v.indexOf('..') !== -1) return false;
+      var parts = v.split('@');
+      var local = parts[0];
+      var domain = parts[1];
+      if (!local || !domain) return false;
+      if (local.charAt(0) === '.' || local.charAt(local.length - 1) === '.') return false;
+      if (/^[.-]/.test(domain) || /[.-]$/.test(domain)) return false;
+      if (domain.indexOf('.') === -1) return false;
+      if (!/\.[a-zA-Z]{2,}$/.test(domain)) return false;
+      return true;
+    }
+
+    function tidy(v) {
+      return (v || '')
+        .replace(/\s+/g, '')
+        .replace(/,/g, '.')
+        .replace(/\.{2,}/g, '.')
+        .replace(/^\.+/, '')
+        .replace(/\.+$/, '');
+    }
+
+    function slipDistance(a, b) {
+      var i, j;
+      var d = [];
+      for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+      for (j = 0; j <= b.length; j++) { d[0][j] = j; }
+      for (i = 1; i <= a.length; i++) {
+        for (j = 1; j <= b.length; j++) {
+          var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+          if (i > 1 && j > 1 &&
+              a.charAt(i - 1) === b.charAt(j - 2) &&
+              a.charAt(i - 2) === b.charAt(j - 1)) {
+            d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+          }
+        }
+      }
+      return d[a.length][b.length];
+    }
+
+    function suggestDomain(domain) {
+      domain = (domain || '').toLowerCase();
+      var i;
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (KNOWN_DOMAINS[i] === domain) return null;
+      }
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (slipDistance(domain, KNOWN_DOMAINS[i]) === 1) return KNOWN_DOMAINS[i];
+      }
+      return null;
+    }
+
+    function correctionFor(email) {
+      if (!looksLikeEmail(email)) {
+        var cleaned = tidy(email);
+        if (cleaned !== email && looksLikeEmail(cleaned)) {
+          var fixedDomain = suggestDomain(cleaned.split('@')[1]);
+          if (fixedDomain) return cleaned.split('@')[0] + '@' + fixedDomain;
+          return cleaned;
+        }
+        return null;
+      }
+      var better = suggestDomain(email.split('@')[1]);
+      if (better) return email.split('@')[0] + '@' + better;
+      return null;
+    }
+
+    var warnedAbout = '';
+    function clearSuggestion() { suggestBox.style.display = 'none'; suggestBox.textContent = ''; }
+    function showSuggestion(fixed) {
+      suggestBox.textContent = 'Did you mean ';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = fixed;
+      btn.addEventListener('click', function () {
+        emailInput.value = fixed; warnedAbout = ''; clearSuggestion();
+        errorBox.style.display = 'none'; emailInput.focus();
+      });
+      suggestBox.appendChild(btn);
+      suggestBox.appendChild(document.createTextNode('?'));
+      suggestBox.style.display = 'block';
+    }
+    function showError(msg) { errorBox.textContent = msg; errorBox.style.display = 'block'; }
+
+    emailInput.addEventListener('blur', function () {
+      try {
+        var v = (emailInput.value || '').trim();
+        if (!v) { clearSuggestion(); return; }
+        var fix = correctionFor(v);
+        if (fix) { showSuggestion(fix); } else { clearSuggestion(); }
+      } catch (err) { clearSuggestion(); }
+    });
+    emailInput.addEventListener('input', function () { warnedAbout = ''; clearSuggestion(); });
+
+    // ---- When to show it ----
+    var html = document.documentElement;
+    var isDone = function () { try { return !!localStorage.getItem(DONE_KEY); } catch (e) { return false; } };
+    var markDone = function () { try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {} };
+    var opened = false, signedUp = false;
+    var skip = /came-from-leadtime/.test(html.className) || isDone();
+
+    function allowed() { return !skip && !opened && !signedUp && !isDone(); }
+    function hideBar() { bar.classList.remove('up'); bar.classList.remove('show'); }
+    function openPop() {
+      if (!allowed()) return;
+      opened = true;
+      hideBar();
+      pop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      try { emailInput.focus({ preventScroll: true }); } catch (e) { emailInput.focus(); }
+    }
+    function closePop() {
+      if (!pop.classList.contains('open')) return;
+      pop.classList.remove('open');
+      document.body.style.overflow = '';
+      markDone();
+    }
+    function showBar() {
+      if (!allowed()) return;
+      bar.classList.add('show');
+      setTimeout(function () { bar.classList.add('up'); }, 30);
+    }
+
+    document.getElementById('lt-pop-x').addEventListener('click', closePop);
+    pop.addEventListener('click', function (e) { if (e.target === pop) closePop(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePop(); });
+    document.getElementById('lt-bar-go').addEventListener('click', openPop);
+    document.getElementById('lt-bar-x').addEventListener('click', function () { hideBar(); markDone(); });
+
+    // ---- Sending the form ----
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      var email = (emailInput.value || '').trim();
+      try {
+        if (!looksLikeEmail(email)) {
+          var repair = correctionFor(email);
+          if (repair) { showSuggestion(repair); }
+          showError('That email address doesn\u2019t look quite right. Please check it and try again.');
+          emailInput.focus();
+          return;
+        }
+        var better = correctionFor(email);
+        if (better && warnedAbout !== email) { showSuggestion(better); warnedAbout = email; return; }
+        clearSuggestion();
+        emailInput.value = email;
+      } catch (err) {}
+
+      submitBtn.disabled = true;
+      var originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Sending...';
+
+      fetch(SIGNUP_ADDRESS, { method: 'POST', body: new FormData(form) })
+        .then(function (response) {
+          return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+        })
+        .then(function (result) {
+          if (result.ok && result.data.status === 'success') {
+            body.style.display = 'none';
+            done.style.display = 'block';
+            signedUp = true;
+            markDone();
+          } else {
+            showError((result.data && result.data.message) || 'Something went wrong. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        })
+        .catch(function () {
+          showError('Could not send. Please check your connection and try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        });
+    });
+
+    if (skip) return;
+    var hasMouse = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (hasMouse) {
+      setTimeout(function () {
+        document.addEventListener('mouseout', function (e) {
+          if (!e.relatedTarget && e.clientY <= 0) openPop();
+        });
+      }, WAIT_COMPUTER);
+    } else {
+      setTimeout(showBar, WAIT_TOUCH);
+    }
+  } catch (e) {}
+})();
+</script>
 
 </body>
 </html>

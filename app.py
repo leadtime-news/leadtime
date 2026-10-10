@@ -584,7 +584,9 @@ def article_starting_the_conversation_about_where_a_parent_will_live():
 
 @app.route('/articles/what-a-family-needs-to-know-if-someone-steps-in')
 def article_what_a_family_needs_to_know_if_someone_steps_in():
-    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in.html')
+    # October 2026: the page file was renamed to ...-v2.html so it could be
+    # uploaded without a name clash. The web address above is unchanged.
+    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in-v2.html')
 
 
 # Recipes. Added October 2026 for the Thanksgiving edition. A recipe page is
