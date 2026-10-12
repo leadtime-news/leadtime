@@ -149,6 +149,10 @@ a{color:var(--red);text-decoration:none}
 .lp-footer-bottom{flex-direction:column;gap:0.75rem}
 }
 </style>
+<style>
+/* Four menu items (October 2026): a little tighter on small phones only */
+@media(max-width:420px){.lt-nav{gap:1rem!important;padding-left:.75rem!important;padding-right:.75rem!important}.lt-nav a{font-size:12px!important;letter-spacing:.06em!important}}
+</style>
 </head>
 <body>
 
@@ -162,6 +166,7 @@ a{color:var(--red);text-decoration:none}
 <nav class="lt-nav" aria-label="Section">
 <a href="/home">Home</a>
 <a href="/articles">Articles</a>
+<a href="/grandparents">Grandparents</a>
 <a href="/about" class="active">About</a>
 </nav>
 </div>
