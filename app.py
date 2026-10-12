@@ -141,8 +141,8 @@ SIGNUP_SOURCES = {
         'label': 'the pop-up guide offer on the Kintrak sales page (kintrak.ca)',
     },
     # Added October 2026: the pop-up guide offer on leadtime.news pages other
-    # than the landing page (the apple crisp recipe first, the gift guide
-    # later). Which page it was is sent along separately as signup_page.
+    # than the landing page (the apple crisp recipe first, then the articles
+    # and the grandparents page). Which page it was is sent along separately as signup_page.
     'site-popup': {
         'utm_source': 'leadtime.news',
         'utm_medium': 'site-popup',
@@ -597,6 +597,15 @@ def recipe_family_favourite_apple_crisp():
     return send_from_directory('.', 'family-favourite-apple-crisp.html')
 
 
+# The grandparents page. Added October 2026: things worth keeping at a
+# grandparent's house for when the grandchildren visit, with Amazon links.
+# Its photos are the gp-*.jpg files, served directly like any other file.
+@app.route('/grandparents')
+@app.route('/grandparents.html')
+def grandparents_page():
+    return send_from_directory('.', 'grandparents.html')
+
+
 # Serve the sitemap so search engines can discover every page.
 # Built inline as an explicit XML response (rather than served as a static
 # file) because some automated crawlers reject the static-file response even
@@ -647,6 +656,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
     <lastmod>2026-10-09</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.5</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/grandparents</loc>
+    <lastmod>2026-10-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
   </url>
   <url>
     <loc>https://leadtime.news/about</loc>
