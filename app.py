@@ -50,6 +50,11 @@ Added October 2026 - the pop-up guide offer on leadtime.news pages:
   Its signups arrive here stamped "site-popup", and they also say which page
   they came from, so the notification email can name the page. Everything
   else about them is handled exactly like any other signup.
+
+  Changed October 15, 2026: the four articles now carry a Kintrak pop-up
+  instead of the guide pop-up (it links to kintrak.ca, which offers the
+  guide itself), so article signups no longer arrive here. The recipe and
+  grandparents pages keep the guide pop-up.
 """
 import os
 import hmac
@@ -584,9 +589,9 @@ def article_starting_the_conversation_about_where_a_parent_will_live():
 
 @app.route('/articles/what-a-family-needs-to-know-if-someone-steps-in')
 def article_what_a_family_needs_to_know_if_someone_steps_in():
-    # October 2026: the page file was renamed to ...-v2.html so it could be
-    # uploaded without a name clash. The web address above is unchanged.
-    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in-v2.html')
+    # October 2026: the page file was renamed (now ...-v3.html) so it could
+    # be uploaded without a name clash. The web address above is unchanged.
+    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in-v3.html')
 
 
 # Recipes. Added October 2026 for the Thanksgiving edition. A recipe page is
