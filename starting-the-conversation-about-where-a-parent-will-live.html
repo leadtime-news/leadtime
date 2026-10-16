@@ -349,8 +349,9 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 </div>
 </footer>
 
-<!-- Kintrak pop-up and phone/tablet bar (October 2026). Replaces the guide
-     pop-up on the articles; kintrak.ca offers the guide pop-up itself. The
+<!-- Kintrak pop-up and phone/tablet bar (October 2026). Shown first on the
+     articles. If it is closed without a click through, the guide offer below
+     follows it (added October 16, 2026). The
      button carries labels (leadtime / article-popup) so a sale that starts
      here shows its source, and it deliberately does NOT use ?from=leadtime,
      so kintrak.ca still offers these readers the free guide. -->
@@ -393,6 +394,7 @@ Lead Time<span class="lp-footer-brand-rule"></span>
     var isDone = function () { try { return !!localStorage.getItem(DONE_KEY); } catch (e) { return false; } };
     var markDone = function () { try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {} };
     var opened = false;
+    var accepted = false;   // true once they click through to kintrak.ca
     // Newsletter readers (?from=newsletter or ?from=leadtime) already see
     // Kintrak in every issue, so they get no pop-up.
     var skip = /came-from-leadtime/.test(html.className) || isDone();
@@ -411,6 +413,8 @@ Lead Time<span class="lp-footer-brand-rule"></span>
       pop.classList.remove('open');
       document.body.style.overflow = '';
       markDone();
+      // Closed without clicking through: offer the free guide instead.
+      if (!accepted && window.ltGuideOffer) window.ltGuideOffer('popup');
     }
     function showBar() {
       if (!allowed()) return;
@@ -422,19 +426,370 @@ Lead Time<span class="lp-footer-brand-rule"></span>
     pop.addEventListener('click', function (e) { if (e.target === pop) closePop(); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePop(); });
     document.getElementById('lt-bar-go').addEventListener('click', openPop);
-    document.getElementById('lt-bar-x').addEventListener('click', function () { hideBar(); markDone(); });
-    document.getElementById('lt-pop-go').addEventListener('click', function () { markDone(); closePop(); });
+    document.getElementById('lt-bar-x').addEventListener('click', function () {
+      hideBar(); markDone();
+      if (window.ltGuideOffer) window.ltGuideOffer('bar');
+    });
+    document.getElementById('lt-pop-go').addEventListener('click', function () { accepted = true; markDone(); closePop(); });
 
     // Anyone who has already clicked through to kintrak.ca from the article
     // itself is not shown the pop-up afterwards.
     var kLinks = document.querySelectorAll('a[href*="kintrak.ca"]');
     for (var i = 0; i < kLinks.length; i++) {
       if (kLinks[i].id !== 'lt-pop-go') {
-        kLinks[i].addEventListener('click', function () { markDone(); hideBar(); });
+        kLinks[i].addEventListener('click', function () { accepted = true; markDone(); hideBar(); });
       }
     }
 
     if (skip) return;
+    var hasMouse = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
+    if (hasMouse) {
+      setTimeout(function () {
+        document.addEventListener('mouseout', function (e) {
+          if (!e.relatedTarget && e.clientY <= 0) openPop();
+        });
+      }, WAIT_COMPUTER);
+    } else {
+      setTimeout(showBar, WAIT_TOUCH);
+    }
+  } catch (e) {}
+})();
+</script>
+
+<!-- Guide offer pop-up and phone/tablet bar (October 16, 2026). Copied from
+     the recipe page. It appears when a reader closes the Kintrak offer without
+     clicking through, or on its own once the Kintrak offer has been seen.
+     Signups go to /subscribe stamped "site-popup", with this page's address
+     and any pin labels the visitor arrived with. -->
+<div class="lt-pop" id="lt-gpop" role="dialog" aria-modal="true" aria-labelledby="lt-gpop-h">
+<div class="lt-pop-card">
+<button type="button" class="lt-pop-x" id="lt-gpop-x" aria-label="Close">&times;</button>
+<div id="lt-gpop-body">
+<p class="lt-pop-lead">Whether you are thinking about your own home, or helping your parents with theirs, here&rsquo;s a free guide to&nbsp;help.</p>
+<div class="lt-pop-label">Free guide</div>
+<h2 class="lt-pop-h" id="lt-gpop-h">The Aging-in-Place Home Walk&#8209;Through&nbsp;Guide</h2>
+<p class="lt-pop-intro">A structured set of questions to help you notice what often goes unnoticed: whether a home could support independent living. Use it in your own home, walk through a parent&rsquo;s home together, or bring it along to one you&rsquo;re&nbsp;considering.</p>
+<form id="lt-gpop-form" novalidate>
+<div class="lt-field">
+<label for="lt-gpop-email">Email address <span class="req">*</span></label>
+<input type="email" name="email" id="lt-gpop-email" autocomplete="email" required>
+<div class="lt-suggest" id="lt-gpop-suggest" aria-live="polite"></div>
+</div>
+<div class="lt-field">
+<label for="lt-gpop-fname">First name</label>
+<input type="text" name="first_name" id="lt-gpop-fname" autocomplete="given-name">
+</div>
+<div class="lt-optin">
+<input type="checkbox" name="newsletter_optin" id="lt-gpop-optin" value="yes">
+<label for="lt-gpop-optin"><span class="lead">Add me to Lead Time, the free weekly newsletter about planning ahead for aging in place.</span> It's quicker to read than your coffee is to finish. Leave whenever you like, with no&nbsp;hard&nbsp;feelings.</label>
+</div>
+<div class="lt-hp" aria-hidden="true"><input type="text" name="honeypot" tabindex="-1" value="" autocomplete="off"></div>
+<input type="hidden" name="signup_source" value="site-popup">
+<input type="hidden" name="signup_page" value="">
+<input type="hidden" name="ad_source" value="">
+<input type="hidden" name="ad_medium" value="">
+<input type="hidden" name="ad_campaign" value="">
+<input type="hidden" name="ad_content" value="">
+<div class="lt-error" id="lt-gpop-error" role="alert"></div>
+<button type="submit" class="lt-btn" id="lt-gpop-submit">Please send me the guide</button>
+</form>
+</div>
+<div class="lt-pop-done" id="lt-gpop-done" aria-live="polite">
+<div class="lt-pop-label">Free guide</div>
+<h2 class="lt-pop-h">Thank you. Your guide is ready.</h2>
+<p>Your walk-through guide is waiting on the next page.</p>
+<a class="lt-btn" href="/lead-time-walkthrough-ready" target="_blank" rel="noopener">Open your guide</a>
+</div>
+</div>
+</div>
+<div class="lt-bar" id="lt-gbar" aria-live="polite">
+<div class="lt-bar-text"><b>Free guide</b> for your home, or your parents&rsquo;&nbsp;home</div>
+<button type="button" class="lt-bar-go" id="lt-gbar-go">Take a look</button>
+<button type="button" class="lt-bar-x" id="lt-gbar-x" aria-label="No thanks">&times;</button>
+</div>
+
+<script>
+(function () {
+  try {
+    var DONE_KEY = 'lt-guide-offer-done';
+    var WAIT_COMPUTER = 5000;   // on the page this long before it can open
+    var WAIT_TOUCH = 8000;      // phones and tablets: when the bar rises
+    var SIGNUP_ADDRESS = '/subscribe';
+
+    var form = document.getElementById('lt-gpop-form');
+    var pop = document.getElementById('lt-gpop');
+    var bar = document.getElementById('lt-gbar');
+    if (!form || !pop || !bar) return;
+
+    // Which page this is, so the notification email can name it.
+    form.querySelector('input[name="signup_page"]').value = window.location.pathname;
+
+    // Labels from a tagged link (for example a Pinterest pin), remembered for
+    // this visit. The form's own name replaces the link's medium, so beehiiv
+    // shows e.g. "pinterest / site-popup" and the pin's campaign.
+    var labels = null;
+    try {
+      var q = new URLSearchParams(window.location.search);
+      if (q.get('utm_source')) {
+        labels = { source: q.get('utm_source') || '', medium: q.get('utm_medium') || '',
+                   campaign: q.get('utm_campaign') || '', content: q.get('utm_content') || '' };
+        try { sessionStorage.setItem('lt-ad-labels', JSON.stringify(labels)); } catch (e) {}
+      } else {
+        try { labels = JSON.parse(sessionStorage.getItem('lt-ad-labels') || 'null'); } catch (e) {}
+      }
+    } catch (e) {}
+    if (labels && labels.source) {
+      form.querySelector('input[name="ad_source"]').value = labels.source;
+      form.querySelector('input[name="ad_medium"]').value = 'site-popup';
+      form.querySelector('input[name="ad_campaign"]').value = labels.campaign || '';
+      form.querySelector('input[name="ad_content"]').value = labels.content || '';
+    }
+
+    // The "Get the free guide" button on this page goes to the signup page.
+    // Add this visit's labels to it, so a signup that starts on this page
+    // from a pin is still recorded as coming from that pin.
+    if (labels && labels.source) {
+      try {
+        var guideLinks = document.querySelectorAll('a[href]');
+        for (var gi = 0; gi < guideLinks.length; gi++) {
+          var u = new URL(guideLinks[gi].getAttribute('href'), window.location.href);
+          if (u.origin === window.location.origin &&
+              (u.pathname === '/lead-time-walkthrough.html' || u.pathname === '/')) {
+            u.searchParams.set('utm_source', labels.source);
+            if (labels.medium) u.searchParams.set('utm_medium', labels.medium);
+            if (labels.campaign) u.searchParams.set('utm_campaign', labels.campaign);
+            if (labels.content) u.searchParams.set('utm_content', labels.content);
+            guideLinks[gi].setAttribute('href', u.pathname + u.search + u.hash);
+          }
+        }
+      } catch (e) {}
+    }
+
+    // ---- Email typo catching, the same as the other signup forms ----
+    var submitBtn = document.getElementById('lt-gpop-submit');
+    var errorBox = document.getElementById('lt-gpop-error');
+    var emailInput = document.getElementById('lt-gpop-email');
+    var suggestBox = document.getElementById('lt-gpop-suggest');
+    var body = document.getElementById('lt-gpop-body');
+    var done = document.getElementById('lt-gpop-done');
+
+    var KNOWN_DOMAINS = [
+      'gmail.com', 'googlemail.com',
+      'hotmail.com', 'hotmail.ca', 'outlook.com', 'outlook.ca',
+      'live.com', 'live.ca', 'msn.com',
+      'yahoo.com', 'yahoo.ca', 'ymail.com',
+      'icloud.com', 'me.com', 'mac.com',
+      'aol.com', 'protonmail.com', 'proton.me',
+      'shaw.ca', 'telus.net', 'telus.com', 'sympatico.ca',
+      'rogers.com', 'bell.net', 'bell.ca', 'cogeco.ca',
+      'videotron.ca', 'eastlink.ca', 'xplornet.com',
+      // U.S. internet and phone company addresses, including older ones
+      // many readers have kept for years
+      'att.net', 'sbcglobal.net', 'bellsouth.net', 'pacbell.net',
+      'swbell.net', 'ameritech.net', 'prodigy.net',
+      'comcast.net', 'verizon.net', 'cox.net', 'charter.net',
+      'spectrum.net', 'roadrunner.com', 'twc.com',
+      'frontier.com', 'centurylink.net', 'windstream.net',
+      'optonline.net', 'earthlink.net', 'juno.com', 'netzero.net',
+      'rocketmail.com', 'mail.com', 'gmx.com',
+      // Forwarding services (Firefox Relay, DuckDuckGo, Apple). Listed so
+      // they are never mistaken for a typo of something else.
+      'mozmail.com', 'duck.com', 'privaterelay.appleid.com'
+    ];
+
+    function looksLikeEmail(v) {
+      if (!v) return false;
+      if (/[\s,;]/.test(v)) return false;
+      if (v.split('@').length !== 2) return false;
+      if (v.indexOf('..') !== -1) return false;
+      var parts = v.split('@');
+      var local = parts[0];
+      var domain = parts[1];
+      if (!local || !domain) return false;
+      if (local.charAt(0) === '.' || local.charAt(local.length - 1) === '.') return false;
+      if (/^[.-]/.test(domain) || /[.-]$/.test(domain)) return false;
+      if (domain.indexOf('.') === -1) return false;
+      if (!/\.[a-zA-Z]{2,}$/.test(domain)) return false;
+      return true;
+    }
+
+    function tidy(v) {
+      return (v || '')
+        .replace(/\s+/g, '')
+        .replace(/,/g, '.')
+        .replace(/\.{2,}/g, '.')
+        .replace(/^\.+/, '')
+        .replace(/\.+$/, '');
+    }
+
+    function slipDistance(a, b) {
+      var i, j;
+      var d = [];
+      for (i = 0; i <= a.length; i++) { d[i] = [i]; }
+      for (j = 0; j <= b.length; j++) { d[0][j] = j; }
+      for (i = 1; i <= a.length; i++) {
+        for (j = 1; j <= b.length; j++) {
+          var cost = a.charAt(i - 1) === b.charAt(j - 1) ? 0 : 1;
+          d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + cost);
+          if (i > 1 && j > 1 &&
+              a.charAt(i - 1) === b.charAt(j - 2) &&
+              a.charAt(i - 2) === b.charAt(j - 1)) {
+            d[i][j] = Math.min(d[i][j], d[i - 2][j - 2] + cost);
+          }
+        }
+      }
+      return d[a.length][b.length];
+    }
+
+    function suggestDomain(domain) {
+      domain = (domain || '').toLowerCase();
+      var i;
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (KNOWN_DOMAINS[i] === domain) return null;
+      }
+      for (i = 0; i < KNOWN_DOMAINS.length; i++) {
+        if (slipDistance(domain, KNOWN_DOMAINS[i]) === 1) return KNOWN_DOMAINS[i];
+      }
+      return null;
+    }
+
+    function correctionFor(email) {
+      if (!looksLikeEmail(email)) {
+        var cleaned = tidy(email);
+        if (cleaned !== email && looksLikeEmail(cleaned)) {
+          var fixedDomain = suggestDomain(cleaned.split('@')[1]);
+          if (fixedDomain) return cleaned.split('@')[0] + '@' + fixedDomain;
+          return cleaned;
+        }
+        return null;
+      }
+      var better = suggestDomain(email.split('@')[1]);
+      if (better) return email.split('@')[0] + '@' + better;
+      return null;
+    }
+
+    var warnedAbout = '';
+    function clearSuggestion() { suggestBox.style.display = 'none'; suggestBox.textContent = ''; }
+    function showSuggestion(fixed) {
+      suggestBox.textContent = 'Did you mean ';
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.textContent = fixed;
+      btn.addEventListener('click', function () {
+        emailInput.value = fixed; warnedAbout = ''; clearSuggestion();
+        errorBox.style.display = 'none'; emailInput.focus();
+      });
+      suggestBox.appendChild(btn);
+      suggestBox.appendChild(document.createTextNode('?'));
+      suggestBox.style.display = 'block';
+    }
+    function showError(msg) { errorBox.textContent = msg; errorBox.style.display = 'block'; }
+
+    emailInput.addEventListener('blur', function () {
+      try {
+        var v = (emailInput.value || '').trim();
+        if (!v) { clearSuggestion(); return; }
+        var fix = correctionFor(v);
+        if (fix) { showSuggestion(fix); } else { clearSuggestion(); }
+      } catch (err) { clearSuggestion(); }
+    });
+    emailInput.addEventListener('input', function () { warnedAbout = ''; clearSuggestion(); });
+
+    // ---- When to show it ----
+    var html = document.documentElement;
+    var isDone = function () { try { return !!localStorage.getItem(DONE_KEY); } catch (e) { return false; } };
+    var markDone = function () { try { localStorage.setItem(DONE_KEY, '1'); } catch (e) {} };
+    var opened = false, signedUp = false;
+    var skip = /came-from-leadtime/.test(html.className) || isDone();
+
+    function allowed() { return !skip && !opened && !signedUp && !isDone(); }
+    function hideBar() { bar.classList.remove('up'); bar.classList.remove('show'); }
+    function openPop() {
+      if (!allowed()) return;
+      opened = true;
+      hideBar();
+      pop.classList.add('open');
+      document.body.style.overflow = 'hidden';
+      try { emailInput.focus({ preventScroll: true }); } catch (e) { emailInput.focus(); }
+    }
+    function closePop() {
+      if (!pop.classList.contains('open')) return;
+      pop.classList.remove('open');
+      document.body.style.overflow = '';
+      markDone();
+    }
+    function showBar() {
+      if (!allowed()) return;
+      bar.classList.add('show');
+      setTimeout(function () { bar.classList.add('up'); }, 30);
+    }
+
+    document.getElementById('lt-gpop-x').addEventListener('click', closePop);
+    pop.addEventListener('click', function (e) { if (e.target === pop) closePop(); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closePop(); });
+    document.getElementById('lt-gbar-go').addEventListener('click', openPop);
+    document.getElementById('lt-gbar-x').addEventListener('click', function () { hideBar(); markDone(); });
+
+    // ---- Sending the form ----
+    form.addEventListener('submit', function (e) {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      var email = (emailInput.value || '').trim();
+      try {
+        if (!looksLikeEmail(email)) {
+          var repair = correctionFor(email);
+          if (repair) { showSuggestion(repair); }
+          showError('That email address doesn\u2019t look quite right. Please check it and try again.');
+          emailInput.focus();
+          return;
+        }
+        var better = correctionFor(email);
+        if (better && warnedAbout !== email) { showSuggestion(better); warnedAbout = email; return; }
+        clearSuggestion();
+        emailInput.value = email;
+      } catch (err) {}
+
+      submitBtn.disabled = true;
+      var originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Sending...';
+
+      fetch(SIGNUP_ADDRESS, { method: 'POST', body: new FormData(form) })
+        .then(function (response) {
+          return response.json().then(function (data) { return { ok: response.ok, data: data }; });
+        })
+        .then(function (result) {
+          if (result.ok && result.data.status === 'success') {
+            body.style.display = 'none';
+            done.style.display = 'block';
+            signedUp = true;
+            markDone();
+          } else {
+            showError((result.data && result.data.message) || 'Something went wrong. Please try again.');
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        })
+        .catch(function () {
+          showError('Could not send. Please check your connection and try again.');
+          submitBtn.disabled = false;
+          submitBtn.textContent = originalText;
+        });
+    });
+
+    // Called by the Kintrak pop-up when a reader closes it without clicking
+    // through. A closed box is followed by this box; a dismissed phone bar
+    // is followed by this bar.
+    window.ltGuideOffer = function (how) {
+      if (!allowed()) return;
+      if (how === 'bar') { setTimeout(showBar, 1200); } else { setTimeout(openPop, 350); }
+    };
+
+    if (skip) return;
+    // While the Kintrak offer is still to come on this page, wait for it
+    // rather than competing with it.
+    var kintrakPending = true;
+    try { kintrakPending = !localStorage.getItem('lt-kintrak-offer-done'); } catch (e) {}
+    if (kintrakPending) return;
     var hasMouse = window.matchMedia && window.matchMedia('(hover: hover) and (pointer: fine)').matches;
     if (hasMouse) {
       setTimeout(function () {
