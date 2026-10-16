@@ -372,38 +372,86 @@ html,body,.lt-article{background:#fff!important}
 @media print{.lt-pop,.lt-bar{display:none!important}}
 </style>
 <style>
-.gp-disclose{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-muted);line-height:1.6;background:var(--cream-deep);border-left:4px solid var(--red);padding:.85rem 1.1rem;margin:0 0 2rem}
-.gp-list{list-style:none;margin:0;padding:0;border-top:1px solid var(--rule)}
-.lt-body .gp-list li{padding:1.35rem 0;border-bottom:1px solid var(--rule)}
-.lt-body .gp-list li::before{display:none}
-.gp-name{font-family:'Source Serif Pro',Georgia,serif;font-size:21px;font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:.3rem}
-.gp-tag{display:inline-block;vertical-align:middle;margin-left:.5rem;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red);border:1px solid var(--red);border-radius:20px;padding:2px 9px 1px;position:relative;top:-2px}
-.lt-body p.gp-desc{margin:0 0 .6rem}
-.gp-shop{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;letter-spacing:.02em;color:var(--red)}
-.gp-shop:hover{color:var(--red-dark);text-decoration:underline}
-.gp-note{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-muted);font-style:italic}
-.lt-body .gp-list li.gp-has-img{display:flex;gap:1.75rem;align-items:center}
-.gp-img{flex:0 0 200px;width:200px;height:250px;object-fit:cover;border-radius:4px;display:block}
-.gp-img.gp-wide{flex-basis:240px;width:240px;height:180px}
-.gp-img-link{flex:0 0 auto;display:block}
-.gp-img-link:hover .gp-img{opacity:.88}
-.gp-txt{flex:1;min-width:0}
-.gp-gal{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-top:1rem}
-.gp-gal-item{display:block;text-decoration:none}
-.gp-gal-item img{width:100%;aspect-ratio:4/3;object-fit:cover;border-radius:4px;display:block;margin-bottom:.6rem}
+/* Grandparents page — polished layout (October 16, 2026) */
+.gp-disclose{font-family:'Inter',sans-serif;font-size:13px;color:var(--ink-muted);line-height:1.6;background:#fff;border:1px solid var(--rule);border-left:4px solid var(--red);border-radius:6px;padding:.9rem 1.15rem;margin:0 auto 2.25rem;max-width:680px}
+
+/* Hero band */
+.gp-page{padding:0!important}
+.gp-hero{background:var(--cream-deep);border-bottom:1px solid var(--rule);padding:3rem 2rem 2.75rem}
+.gp-hero-inner{max-width:760px;margin:0 auto;text-align:center}
+.gp-thumbs{display:flex;justify-content:center;margin:0 0 1.5rem}
+.gp-thumbs img{width:92px;height:92px;border-radius:50%;object-fit:cover;background:#fff;border:4px solid var(--cream);box-shadow:0 4px 14px rgba(0,0,0,.10);margin:0 -10px}
+.gp-thumbs img:nth-child(2){width:108px;height:108px;margin-top:-8px;position:relative;z-index:2}
+.gp-hero .lt-byline{border-bottom:0;padding-bottom:0;margin-bottom:0}
+.gp-hero .lt-deck{margin-bottom:1.5rem}
+
+/* Body column: intro stays at reading width, the item cards go wider */
+.gp-page .lt-article-inner{max-width:940px;padding:2.5rem 0 1rem}
+.gp-page .lt-body{padding-top:0}
+.gp-page .lt-body>p{max-width:680px;margin-left:auto;margin-right:auto}
+
+/* Jump links to the sections */
+.gp-jump{display:flex;justify-content:center;flex-wrap:wrap;gap:.6rem;margin:2rem auto 0;max-width:680px}
+.gp-jump a{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--ink);background:#fff;border:1px solid var(--rule);border-radius:999px;padding:.55rem 1.15rem;transition:border-color .15s,color .15s}
+.gp-jump a:hover{border-color:var(--red);color:var(--red)}
+
+/* Section headings */
+.lt-body h2.gp-cat{text-align:center;margin:3.5rem 0 1.75rem;scroll-margin-top:1rem}
+.lt-body h2.gp-cat::after{content:"";display:block;width:40px;height:2px;background:var(--red);margin:.85rem auto 0}
+
+/* Item cards */
+.gp-grid{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;grid-auto-flow:dense}
+.lt-body .gp-grid li{padding:0;margin:0;font-size:inherit;line-height:inherit}
+.lt-body .gp-grid li::before{display:none}
+.gp-card{background:#fff;border:1px solid var(--rule);border-radius:10px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 2px 10px rgba(0,0,0,.04);transition:box-shadow .2s,transform .2s}
+.gp-card:hover{box-shadow:0 8px 24px rgba(0,0,0,.08);transform:translateY(-2px)}
+.gp-pic{display:flex;align-items:center;justify-content:center;height:240px;padding:18px;background:#fff;border-bottom:1px solid var(--rule)}
+.gp-pic img{max-width:100%;max-height:100%;width:auto;height:auto;object-fit:contain;display:block}
+a.gp-pic:hover img{opacity:.88}
+.gp-icon{background:var(--cream-deep);color:var(--red)}
+.gp-icon svg{width:72px;height:72px;display:block}
+.gp-txt{flex:1;display:flex;flex-direction:column;padding:1.3rem 1.4rem 1.5rem}
+.gp-name{font-family:'Source Serif Pro',Georgia,serif;font-size:21px;font-weight:600;color:var(--ink);line-height:1.3;margin-bottom:.45rem}
+.gp-tag{display:inline-block;vertical-align:middle;margin-left:.5rem;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red);background:#fbf1f2;border:1px solid #ecc9ce;border-radius:20px;padding:2px 9px 1px;position:relative;top:-2px;white-space:nowrap}
+.lt-body p.gp-desc{font-size:17px;line-height:1.65;margin:0 0 1rem}
+.lt-body p.gp-prenote{font-family:'Inter',sans-serif;font-size:13.5px;font-style:italic;color:var(--ink-muted);margin:-.4rem 0 1rem}
+.gp-links{margin-top:auto;display:flex;flex-wrap:wrap;gap:.6rem}
+.gp-shop{display:inline-block;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:600;letter-spacing:.02em;color:var(--red);border:1.5px solid var(--red);border-radius:999px;padding:.5rem 1rem;line-height:1.3;transition:background .15s,color .15s}
+.gp-shop:hover,.gp-gal-item:hover .gp-shop{background:var(--red);color:#fff}
+
+/* Wide cards (books, puzzles) span both columns */
+.gp-full{grid-column:1/-1}
+.gp-row{flex-direction:row}
+.gp-row .gp-pic{flex:0 0 300px;height:auto;min-height:260px;border-bottom:0;border-right:1px solid var(--rule)}
+.gp-gal{display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:.25rem}
+.gp-gal-item{display:flex;flex-direction:column;align-items:flex-start;text-decoration:none;background:var(--cream);border:1px solid var(--rule);border-radius:8px;padding:1rem}
+.gp-gal-item img{width:100%;height:200px;object-fit:contain;background:#fff;border-radius:4px;display:block;margin-bottom:.75rem}
 .gp-age{display:block;font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:.2rem}
-.gp-cap{display:block;font-family:'Source Serif Pro',Georgia,serif;font-size:16px;color:var(--ink-soft);line-height:1.45;margin-bottom:.35rem}
-.gp-gal-item:hover .gp-shop{text-decoration:underline}
-.gp-links{display:flex;flex-wrap:wrap;gap:.4rem 1.75rem}
-.lt-body h2.gp-cat{margin:2.75rem 0 .5rem}
-.lt-body h2.gp-cat:first-of-type{margin-top:2.5rem}
-.gp-img{object-fit:contain!important}
-.lt-body p.gp-prenote{font-family:'Inter',sans-serif;font-size:14px;font-style:italic;color:var(--ink-muted);margin:0 0 .35rem}
+.gp-cap{display:block;font-family:'Source Serif Pro',Georgia,serif;font-size:16px;color:var(--ink-soft);line-height:1.45;margin-bottom:.75rem}
+
+/* Closing section */
 .gp-close-h{font-family:'Source Serif Pro',Georgia,serif;font-size:26px;font-weight:600;color:var(--ink);line-height:1.25;margin:0 0 1.25rem;text-wrap:balance}
 .lt-cta-inner p.gp-kt{border-top:1px solid var(--rule);padding-top:2rem;margin-top:2.5rem}
-.lt-cta-inner p.gp-kt-link{margin-top:-.75rem}
+.lt-cta-inner p.gp-kt-link{margin-top:-.25rem}
 .gp-ph{background:#fff6c9;padding:0 .25em;border-radius:2px}
-@media(max-width:640px){.gp-name{font-size:19px}.lt-body .gp-list li.gp-has-img{gap:1rem;align-items:flex-start}.gp-img{flex-basis:110px;width:110px;height:138px}.gp-img.gp-wide{flex-basis:130px;width:130px;height:98px}}
+
+@media(max-width:980px){.gp-page .lt-article-inner{padding-left:2rem;padding-right:2rem}}
+@media(max-width:720px){
+.gp-grid{grid-template-columns:1fr}
+.gp-row{flex-direction:column}
+.gp-row .gp-pic{flex:none;height:240px;min-height:0;border-right:0;border-bottom:1px solid var(--rule)}
+}
+@media(max-width:640px){
+.gp-hero{padding:2.25rem 1.25rem 2rem}
+.gp-thumbs img{width:68px;height:68px;margin:0 -8px}
+.gp-thumbs img:nth-child(2){width:80px;height:80px;margin-top:-6px}
+.gp-page .lt-article-inner{padding:2rem 1.25rem .5rem}
+.gp-pic{height:210px}
+.gp-name{font-size:19px}
+.gp-gal{grid-template-columns:1fr;gap:1rem}
+.gp-gal-item img{height:180px}
+.lt-body h2.gp-cat{margin:2.75rem 0 1.25rem}
+}
 </style>
 <style>
 /* Four menu items (October 2026): a little tighter on small phones only */
@@ -428,12 +476,17 @@ html,body,.lt-article{background:#fff!important}
 </nav>
 </div>
 <!-- Page -->
-<article class="lt-article">
-<div class="lt-article-inner">
+<article class="lt-article gp-page">
+<header class="gp-hero">
+<div class="gp-hero-inner">
+<div class="gp-thumbs" aria-hidden="true"><img src="/gp-tea-set.jpg" alt=""><img src="/gp-book-basket.jpg" alt=""><img src="/gp-puppet-theatre.jpg" alt=""></div>
 <div class="lt-eyebrow">For Grandparents</div>
 <h1>When the Grandchildren Come&nbsp;Over</h1>
 <p class="lt-deck">The things worth keeping at your place, so a visit can start the minute they arrive. When the books are in the same basket and the step stool is already in front of the sink, the children know where everything is. Before long, your house starts to feel like theirs&nbsp;too.</p>
 <p class="lt-byline">By <strong>Karen&nbsp;Light</strong> &bull; Editor, Lead Time&nbsp;Newsletter</p>
+</div>
+</header>
+<div class="lt-article-inner">
 
 <div class="lt-body">
 <p class="gp-disclose">These are suggestions to get you inspired, not a complete list, and should not be taken as my endorsement of any product. When you make a purchase from one of my links, I am paid a small commission. It won&rsquo;t make me wealthy, but it will help support the continued publication of my website and newsletters. As an Amazon Associate I earn from qualifying&nbsp;purchases.</p>
@@ -442,33 +495,56 @@ html,body,.lt-article{background:#fff!important}
 <p>You won&rsquo;t need all of it. Pick whatever suits your family&rsquo;s style of&nbsp;visiting.</p>
 <p>Many of these items also make great gifts, for the grandchildren or for their&nbsp;parents.</p>
 
-<h2 class="gp-cat">Essentials</h2>
-<ul class="gp-list">
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0akiUT3l" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img gp-wide" src="/gp-pack-and-play.jpg" alt="A brown pack and play with a change table across the top" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A pack and play with a change table</div><p class="gp-desc">A place for naps, with a change table on top for diapers. It folds up for the closet between&nbsp;visits.</p><a class="gp-shop" href="https://link.amazon/B0akiUT3l" target="_blank" rel="sponsored nofollow noopener noreferrer">See the newest version on Amazon &rarr;</a></div></li>
-<li><div class="gp-name">Diapers and wipes</div><p class="gp-desc">A small supply tucked in the closet, so a forgotten diaper bag is no emergency.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B003B0ShX" target="_blank" rel="sponsored nofollow noopener noreferrer">See the diapers on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B07AnYbfT" target="_blank" rel="sponsored nofollow noopener noreferrer">See the wipes on Amazon &rarr;</a></div></li>
-<li><div class="gp-name">A play mat</div><p class="gp-desc">A clean place to put baby down to play on the&nbsp;floor.</p><a class="gp-shop" href="https://link.amazon/B0in0SpTM" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></li>
-<li><div class="gp-name">A white noise machine and night light</div><p class="gp-desc">For the spare room, so a strange house is less strange at night. Steady white noise also covers the creaks and voices of a house that is still&nbsp;awake.</p><a class="gp-shop" href="https://link.amazon/A07xMb4Yd" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></li>
-<li><div class="gp-name">Outlet covers and cabinet latches</div><p class="gp-desc">If toddlers visit, a few minutes with these makes the whole visit&nbsp;easier.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B04COI5c4" target="_blank" rel="sponsored nofollow noopener noreferrer">See the outlet covers on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B08LrlAMr" target="_blank" rel="sponsored nofollow noopener noreferrer">See the cabinet latches on Amazon &rarr;</a></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0eHCyvXp" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img" src="/gp-high-chair.jpg" alt="A folding high chair with a dark patterned seat and a white tray" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A high chair that folds away</div><p class="gp-desc">A proper seat at the table for the littlest one, and it tucks into a closet when they go&nbsp;home.</p><a class="gp-shop" href="https://link.amazon/B0eHCyvXp" target="_blank" rel="sponsored nofollow noopener noreferrer">See the newest version on Amazon &rarr;</a></div></li>
-<li><div class="gp-name">Plastic plates and cups</div><p class="gp-desc">Nothing to worry about when one goes on the&nbsp;floor.</p><a class="gp-shop" href="https://link.amazon/B0acxi8LX" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></li>
-<li><div class="gp-name">Sippy cups</div><p class="gp-desc">Fewer spills on the couch, and one less thing for parents to&nbsp;pack.</p><a class="gp-shop" href="https://link.amazon/B0j7FsOf2" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0ig2oxfj" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img" src="/gp-toddler-tower.jpg" alt="A bamboo toddler tower with a standing platform and side rails" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A toddler tower for the kitchen</div><p class="gp-desc">So they can help you prepare&nbsp;food.</p><a class="gp-shop" href="https://link.amazon/B0ig2oxfj" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0idUsDkc" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img gp-wide" src="/gp-step-stool.jpg" alt="A black folding step stool with white dots on top" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A step stool for the bathroom</div><p class="gp-desc">So they can reach the sink to wash their hands on their&nbsp;own.</p><a class="gp-shop" href="https://link.amazon/B0idUsDkc" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></li>
+<nav class="gp-jump" aria-label="On this page"><a href="#essentials">Essentials</a><a href="#books">Books</a><a href="#fun">Fun</a></nav>
+
+<h2 class="gp-cat" id="essentials">Essentials</h2>
+<ul class="gp-grid">
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0akiUT3l" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-pack-and-play.jpg" alt="A brown pack and play with a change table across the top" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A pack and play with a change table</div><p class="gp-desc">A place for naps, with a change table on top for diapers. It folds up for the closet between&nbsp;visits.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0akiUT3l" target="_blank" rel="sponsored nofollow noopener noreferrer">See the newest version on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="12" y="20" width="40" height="32" rx="5"/><path d="M24 20v-5a3 3 0 0 1 3-3h10a3 3 0 0 1 3 3v5"/><path d="M22 34c3 4 7 6 10 6s7-2 10-6"/></svg></div><div class="gp-txt"><div class="gp-name">Diapers and wipes</div><p class="gp-desc">A small supply tucked in the closet, so a forgotten diaper bag is no emergency.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B003B0ShX" target="_blank" rel="sponsored nofollow noopener noreferrer">See the diapers on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B07AnYbfT" target="_blank" rel="sponsored nofollow noopener noreferrer">See the wipes on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M8 50h48"/><path d="M12 50c0-18 9-30 20-30s20 12 20 30"/><path d="M24 22v10M40 22v10"/><circle cx="24" cy="36" r="3"/><circle cx="40" cy="36" r="3"/><path d="M32 20v6"/><path d="M29 30h6l-3 4z"/></svg></div><div class="gp-txt"><div class="gp-name">A play mat</div><p class="gp-desc">A clean place to put baby down to play on the&nbsp;floor.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0in0SpTM" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M38 12a20 20 0 1 0 14 34A16 16 0 0 1 38 12z"/><path d="M48 14v6M45 17h6"/><path d="M54 26v4M52 28h4"/></svg></div><div class="gp-txt"><div class="gp-name">A white noise machine and night light</div><p class="gp-desc">For the spare room, so a strange house is less strange at night. Steady white noise also covers the creaks and voices of a house that is still&nbsp;awake.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/A07xMb4Yd" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="8" width="32" height="48" rx="6"/><path d="M26 20v6M38 20v6"/><path d="M29 34a3 3 0 0 1 6 0v3h-6z"/><path d="M26 44v4M38 44v4"/></svg></div><div class="gp-txt"><div class="gp-name">Outlet covers and cabinet latches</div><p class="gp-desc">If toddlers visit, a few minutes with these makes the whole visit&nbsp;easier.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B04COI5c4" target="_blank" rel="sponsored nofollow noopener noreferrer">See the outlet covers on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B08LrlAMr" target="_blank" rel="sponsored nofollow noopener noreferrer">See the cabinet latches on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0eHCyvXp" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-high-chair.jpg" alt="A folding high chair with a dark patterned seat and a white tray" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A high chair that folds away</div><p class="gp-desc">A proper seat at the table for the littlest one, and it tucks into a closet when they go&nbsp;home.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0eHCyvXp" target="_blank" rel="sponsored nofollow noopener noreferrer">See the newest version on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="26" cy="36" r="18"/><circle cx="26" cy="36" r="10"/><path d="M46 18h12l-2 32H48z"/></svg></div><div class="gp-txt"><div class="gp-name">Plastic plates and cups</div><p class="gp-desc">Nothing to worry about when one goes on the&nbsp;floor.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0acxi8LX" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M28 8h8l2 8H26z"/><path d="M22 16h20v6H22z"/><path d="M23 22h18l-2 32a3 3 0 0 1-3 3h-8a3 3 0 0 1-3-3z"/><path d="M23 30h-5a3 3 0 0 0-3 3v6a3 3 0 0 0 3 3h5M41 30h5a3 3 0 0 1 3 3v6a3 3 0 0 1-3 3h-5"/></svg></div><div class="gp-txt"><div class="gp-name">Sippy cups</div><p class="gp-desc">Fewer spills on the couch, and one less thing for parents to&nbsp;pack.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0j7FsOf2" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0ig2oxfj" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-toddler-tower.jpg" alt="A bamboo toddler tower with a standing platform and side rails" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A toddler tower for the kitchen</div><p class="gp-desc">So they can help you prepare&nbsp;food.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0ig2oxfj" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0idUsDkc" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-step-stool.jpg" alt="A black folding step stool with white dots on top" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A step stool for the bathroom</div><p class="gp-desc">So they can reach the sink to wash their hands on their&nbsp;own.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0idUsDkc" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
 </ul>
-<h2 class="gp-cat">Books</h2>
-<ul class="gp-list">
-<li class="gp-has-img"><img class="gp-img" src="/gp-book-basket.jpg" alt="A basket of children&#x27;s books, including The Very Hungry Caterpillar and Go, Dog. Go!" loading="lazy"><div class="gp-txt"><div class="gp-name">A basket of books that stays put<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A few favourites they can count on finding every&nbsp;time.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B07JPu103" target="_blank" rel="sponsored nofollow noopener noreferrer">See <em>The Very Hungry Caterpillar</em> on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B02rQj9Bk" target="_blank" rel="sponsored nofollow noopener noreferrer">See <em>Go, Dog. Go!</em> on Amazon &rarr;</a></div></div></li>
+
+<h2 class="gp-cat" id="books">Books</h2>
+<ul class="gp-grid">
+<li class="gp-card gp-full gp-row"><div class="gp-pic"><img src="/gp-book-basket.jpg" alt="A basket of children&#x27;s books, including The Very Hungry Caterpillar and Go, Dog. Go!" loading="lazy"></div><div class="gp-txt"><div class="gp-name">A basket of books that stays put<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A few favourites they can count on finding every&nbsp;time.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B07JPu103" target="_blank" rel="sponsored nofollow noopener noreferrer">See <em>The Very Hungry Caterpillar</em> on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B02rQj9Bk" target="_blank" rel="sponsored nofollow noopener noreferrer">See <em>Go, Dog. Go!</em> on Amazon &rarr;</a></div></div></li>
 </ul>
-<h2 class="gp-cat">Fun</h2>
-<ul class="gp-list">
-<li><div class="gp-name">A games shelf<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Pick a few classic games, the ones you grew up with, and give them a permanent home at your&nbsp;house.</p></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B05PRoi90" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img" src="/gp-honeycombs.jpg" alt="The Honeycombs matching game: a yellow beehive bag and white hexagon picture tiles" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Honeycombs, a matching game<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Lay a tile, match a picture, and keep the hive growing. The box says ages 6 and up, but younger children enjoy it&nbsp;too.</p><a class="gp-shop" href="https://link.amazon/B05PRoi90" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B08LhRgRK" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img gp-wide" src="/gp-racko.jpg" alt="Box of Rack-O, the classic rack and score card game" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Rack-O, a classic card game<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Many grandparents will remember this one. Put the cards in your rack in order, lowest to highest, before anyone else does. The box says ages 8 and&nbsp;up.</p><a class="gp-shop" href="https://link.amazon/B08LhRgRK" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></li>
-<li><div class="gp-name">A puzzle on the go<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A puzzle left half done invites anyone passing to add a&nbsp;piece.</p><div class="gp-gal"><a class="gp-gal-item" href="https://link.amazon/B05GGMDLy" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-puzzle-4-in-a-box.jpg" alt="Ravensburger Bluey puzzle box with four puzzles of 12 to 24 pieces, ages 3 and up" loading="lazy"><span class="gp-age">Ages 3+</span><span class="gp-cap">Four puzzles in one box, from 12 to 24&nbsp;pieces</span><span class="gp-shop">See it on Amazon &rarr;</span></a><a class="gp-gal-item" href="https://link.amazon/B084p89Zg" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-puzzle-100-piece.jpg" alt="Ravensburger Disney puzzle box with 100 extra-large pieces, ages 6 and up" loading="lazy"><span class="gp-age">Ages 6+</span><span class="gp-cap">100 extra-large&nbsp;pieces</span><span class="gp-shop">See it on Amazon &rarr;</span></a></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0iRYFSBH" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img gp-wide" src="/gp-puppet-theatre.jpg" alt="A wooden puppet theatre with red curtains and four hand puppets on the ledge" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Hand puppets and a puppet theatre<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Behind the curtain, even a shy grandchild has plenty to&nbsp;say.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0bmZoZxg" target="_blank" rel="sponsored nofollow noopener noreferrer">See the hand puppets on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B0iRYFSBH" target="_blank" rel="sponsored nofollow noopener noreferrer">See the puppet theatre on Amazon &rarr;</a></div></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B00l2wbZi" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img gp-wide" src="/gp-tea-set.jpg" alt="A pink and mint green children&#x27;s tea set on a silver tray" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A tea set<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Pour, stir, pass the sugar, and do it all again. A little set for tea parties at the kitchen&nbsp;table.</p><p class="gp-prenote">Tray not&nbsp;included.</p><a class="gp-shop" href="https://link.amazon/B00l2wbZi" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></li>
-<li class="gp-has-img"><a class="gp-img-link" href="https://link.amazon/B0fkiDCN2" target="_blank" rel="sponsored nofollow noopener noreferrer"><img class="gp-img" src="/gp-play-tent.jpg" alt="A navy blue pop-up play tent covered in stars, with picture books inside" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A play tent<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A hideaway of their own, for stories, snacks and secret&nbsp;plans.</p><p class="gp-prenote">This version is no longer&nbsp;available.</p><a class="gp-shop" href="https://link.amazon/B0fkiDCN2" target="_blank" rel="sponsored nofollow noopener noreferrer">See a similar one on Amazon &rarr;</a></div></li>
-<li><div class="gp-name">Sidewalk chalk and bubbles<span class="gp-tag">Battery-free</span></div><p class="gp-desc">For the&nbsp;patio.</p><a class="gp-shop" href="https://link.amazon/B04BJ8t68" target="_blank" rel="sponsored nofollow noopener noreferrer">See the sidewalk chalk on Amazon &rarr;</a></li>
+
+<h2 class="gp-cat" id="fun">Fun</h2>
+<ul class="gp-grid">
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="10" y="22" width="30" height="30" rx="5"/><circle cx="18" cy="30" r="1.8" fill="currentColor"/><circle cx="25" cy="37" r="1.8" fill="currentColor"/><circle cx="32" cy="44" r="1.8" fill="currentColor"/><path d="M34 22l6-10 14 8-8 14"/><circle cx="45" cy="21" r="1.8" fill="currentColor"/></svg></div><div class="gp-txt"><div class="gp-name">A games shelf<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Pick a few classic games, the ones you grew up with, and give them a permanent home at your&nbsp;house.</p></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B05PRoi90" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-honeycombs.jpg" alt="The Honeycombs matching game: a yellow beehive bag and white hexagon picture tiles" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Honeycombs, a matching game<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Lay a tile, match a picture, and keep the hive growing. The box says ages 6 and up, but younger children enjoy it&nbsp;too.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B05PRoi90" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B08LhRgRK" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-racko.jpg" alt="Box of Rack-O, the classic rack and score card game" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Rack-O, a classic card game<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Many grandparents will remember this one. Put the cards in your rack in order, lowest to highest, before anyone else does. The box says ages 8 and&nbsp;up.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B08LhRgRK" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card gp-full"><div class="gp-txt"><div class="gp-name">A puzzle on the go<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A puzzle left half done invites anyone passing to add a&nbsp;piece.</p><div class="gp-gal"><a class="gp-gal-item" href="https://link.amazon/B05GGMDLy" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-puzzle-4-in-a-box.jpg" alt="Ravensburger Bluey puzzle box with four puzzles of 12 to 24 pieces, ages 3 and up" loading="lazy"><span class="gp-age">Ages 3+</span><span class="gp-cap">Four puzzles in one box, from 12 to 24&nbsp;pieces</span><span class="gp-shop">See it on Amazon &rarr;</span></a><a class="gp-gal-item" href="https://link.amazon/B084p89Zg" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-puzzle-100-piece.jpg" alt="Ravensburger Disney puzzle box with 100 extra-large pieces, ages 6 and up" loading="lazy"><span class="gp-age">Ages 6+</span><span class="gp-cap">100 extra-large&nbsp;pieces</span><span class="gp-shop">See it on Amazon &rarr;</span></a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0iRYFSBH" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-puppet-theatre.jpg" alt="A wooden puppet theatre with red curtains and four hand puppets on the ledge" loading="lazy"></a><div class="gp-txt"><div class="gp-name">Hand puppets and a puppet theatre<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Behind the curtain, even a shy grandchild has plenty to&nbsp;say.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0bmZoZxg" target="_blank" rel="sponsored nofollow noopener noreferrer">See the hand puppets on Amazon &rarr;</a><a class="gp-shop" href="https://link.amazon/B0iRYFSBH" target="_blank" rel="sponsored nofollow noopener noreferrer">See the puppet theatre on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B00l2wbZi" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-tea-set.jpg" alt="A pink and mint green children&#x27;s tea set on a silver tray" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A tea set<span class="gp-tag">Battery-free</span></div><p class="gp-desc">Pour, stir, pass the sugar, and do it all again. A little set for tea parties at the kitchen&nbsp;table.</p><p class="gp-prenote">Tray not&nbsp;included.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B00l2wbZi" target="_blank" rel="sponsored nofollow noopener noreferrer">See it on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><a class="gp-pic" href="https://link.amazon/B0fkiDCN2" target="_blank" rel="sponsored nofollow noopener noreferrer"><img src="/gp-play-tent.jpg" alt="A navy blue pop-up play tent covered in stars, with picture books inside" loading="lazy"></a><div class="gp-txt"><div class="gp-name">A play tent<span class="gp-tag">Battery-free</span></div><p class="gp-desc">A hideaway of their own, for stories, snacks and secret&nbsp;plans.</p><p class="gp-prenote">This version is no longer&nbsp;available.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B0fkiDCN2" target="_blank" rel="sponsored nofollow noopener noreferrer">See a similar one on Amazon &rarr;</a></div></div></li>
+
+<li class="gp-card"><div class="gp-pic gp-icon" aria-hidden="true"><svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="40" cy="20" r="10"/><circle cx="52" cy="38" r="5"/><circle cx="34" cy="40" r="4"/><path d="M8 54l14-14 5 5-14 14z"/><path d="M8 54l-1 3 3-1"/></svg></div><div class="gp-txt"><div class="gp-name">Sidewalk chalk and bubbles<span class="gp-tag">Battery-free</span></div><p class="gp-desc">For the&nbsp;patio.</p><div class="gp-links"><a class="gp-shop" href="https://link.amazon/B04BJ8t68" target="_blank" rel="sponsored nofollow noopener noreferrer">See the sidewalk chalk on Amazon &rarr;</a></div></div></li>
 
 </ul>
 </div>
