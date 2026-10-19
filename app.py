@@ -55,6 +55,22 @@ Added October 2026 - the pop-up guide offer on leadtime.news pages:
   instead of the guide pop-up (it links to kintrak.ca, which offers the
   guide itself), so article signups no longer arrive here. The recipe and
   grandparents pages keep the guide pop-up.
+
+Changed October 18, 2026 - the home page moves to leadtime.news:
+  Plain leadtime.news now shows the home page. The signup page has its own
+  address, leadtime.news/walkthrough.
+  Any leadtime.news link that carries ad labels (utm_source=..., as on the
+  Overstory listings, the Pinterest pins and the Pinterest ads) is forwarded
+  to leadtime.news/walkthrough with its labels intact, so every existing ad
+  and pin still lands on the signup form and beehiiv records it as before.
+  The exception is a link from the newsletter itself (utm_medium=newsletter
+  or email, or ?from=newsletter / ?from=leadtime): subscribers stay on the
+  home page rather than being shown a signup form.
+  The old address, /lead-time-walkthrough.html, forwards to the new one.
+  /home still shows the home page, because every page's logo and Home link
+  point there.
+  The home page now carries its own signup box. Its signups arrive stamped
+  "home-page", and the notification email says "(via home page)".
 """
 import os
 import hmac
@@ -66,7 +82,7 @@ from email.message import EmailMessage
 from urllib.parse import quote
 
 import requests
-from flask import Flask, request, jsonify, send_from_directory, Response
+from flask import Flask, request, jsonify, send_from_directory, Response, redirect
 
 # Calgary timestamps for the notification emails. If the timezone database
 # is ever unavailable on the server, we quietly fall back to UTC rather
@@ -153,6 +169,14 @@ SIGNUP_SOURCES = {
         'utm_medium': 'site-popup',
         'referring_site': 'https://leadtime.news/',
         'label': 'the pop-up guide offer on a leadtime.news page',
+    },
+    # Added October 18, 2026: the signup box on the home page, which is now
+    # what plain leadtime.news shows.
+    'home-page': {
+        'utm_source': 'leadtime.news',
+        'utm_medium': 'home-page',
+        'referring_site': 'https://leadtime.news/',
+        'label': 'the signup box on the leadtime.news home page',
     },
 }
 
@@ -413,6 +437,8 @@ def send_signup_notification(email, first_name, newsletter_optin,
             via = ' (via kintrak.ca pop-up)'
         elif source == 'site-popup':
             via = ' (via pop-up on leadtime.news)'
+        elif source == 'home-page':
+            via = ' (via home page)'
         else:
             via = ''
         if ad:
@@ -519,25 +545,61 @@ def process_signup(email, first_name, newsletter_optin, source='leadtime', ad=No
     )
 
 
-# Serve the home page. The root URL is the lead-magnet landing page, so the
-# home page lives at /home. The logo and the Home link on every interior page
-# point here.
+# The signup page's address (October 18, 2026).
+SIGNUP_PAGE_PATH = '/walkthrough'
+
+
+def query_string():
+    """The labels on the end of the current web address, '?...' or ''."""
+    raw = request.query_string.decode('utf-8', 'ignore')
+    return f'?{raw}' if raw else ''
+
+
+def is_labelled_ad_link():
+    """
+    True when the visitor arrived on a link carrying ad labels, such as an
+    Overstory listing or a Pinterest pin. Links from the newsletter itself
+    do not count, so subscribers clicking through stay on the home page.
+    """
+    args = request.args
+    if not (args.get('utm_source') or '').strip():
+        return False
+    if (args.get('utm_medium') or '').strip().lower() in ('newsletter', 'email'):
+        return False
+    if (args.get('from') or '').strip().lower() in ('newsletter', 'leadtime'):
+        return False
+    return True
+
+
+# Plain leadtime.news shows the home page. A labelled ad or pin link is
+# forwarded to the signup page, labels and all.
+@app.route('/')
+def home():
+    if is_labelled_ad_link():
+        return redirect(SIGNUP_PAGE_PATH + query_string(), code=302)
+    return send_from_directory('.', 'home.html')
+
+
+# The home page at its older address. Every page's logo and Home link point
+# here, so it keeps working. The page itself tells search engines that its
+# main address is plain leadtime.news.
 @app.route('/home')
 @app.route('/home.html')
 def home_page():
     return send_from_directory('.', 'home.html')
 
 
-# Serve the landing page at the root URL
-@app.route('/')
-def home():
-    return send_from_directory('.', 'lead-time-walkthrough.html')
-
-
-# Serve the landing page at its named path too
-@app.route('/lead-time-walkthrough.html')
+# The signup page at its own address.
+@app.route(SIGNUP_PAGE_PATH)
 def landing_page():
     return send_from_directory('.', 'lead-time-walkthrough.html')
+
+
+# The signup page's old address, used by the "Get the free guide" buttons on
+# the articles and other pages. Forwarded to the new address, labels intact.
+@app.route('/lead-time-walkthrough.html')
+def landing_page_old_address():
+    return redirect(SIGNUP_PAGE_PATH + query_string(), code=301)
 
 
 # Serve the thank-you page
@@ -619,12 +681,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
     <loc>https://leadtime.news/</loc>
-    <changefreq>monthly</changefreq>
+    <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://leadtime.news/home</loc>
-    <changefreq>weekly</changefreq>
+    <loc>https://leadtime.news/walkthrough</loc>
+    <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
@@ -809,6 +871,8 @@ def describe_source(data):
 
     if source == 'leadtime.news' and medium == 'site-popup':
         return 'the pop-up guide offer on a leadtime.news page'
+    if source == 'leadtime.news' and medium == 'home-page':
+        return 'the signup box on the leadtime.news home page'
     if source == 'leadtime.news':
         return 'the signup page at leadtime.news'
     if source == 'kintrak.ca' and medium == 'kintrak-guide-popup':
