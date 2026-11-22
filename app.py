@@ -651,9 +651,15 @@ def article_starting_the_conversation_about_where_a_parent_will_live():
 
 @app.route('/articles/what-a-family-needs-to-know-if-someone-steps-in')
 def article_what_a_family_needs_to_know_if_someone_steps_in():
-    # October 2026: the page file was renamed (now ...-v3.html) so it could
+    # October 2026: the page file was renamed (later ...-v3.html) so it could
     # be uploaded without a name clash. The web address above is unchanged.
-    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in-v3.html')
+    # November 22, 2026: now ...-v4.html, after a link to the new article was added.
+    return send_from_directory('.', 'what-a-family-needs-to-know-if-someone-steps-in-v4.html')
+
+
+@app.route('/articles/free-available-and-running-on-fumes')
+def article_free_available_and_running_on_fumes():
+    return send_from_directory('.', 'free-available-and-running-on-fumes.html')
 
 
 # Recipes. Added October 2026 for the Thanksgiving edition. A recipe page is
@@ -715,6 +721,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://leadtime.news/articles/what-a-family-needs-to-know-if-someone-steps-in</loc>
     <lastmod>2026-09-08</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/free-available-and-running-on-fumes</loc>
+    <lastmod>2026-11-22</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

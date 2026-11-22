@@ -121,6 +121,13 @@ a{color:var(--red);text-decoration:none}
 .lt-divider{display:block;width:100%;height:2px;background:var(--red);border:0;margin:0}
 .lt-note{padding:2rem 0 0.5rem}
 .lt-note p{font-family:'Source Serif Pro',Georgia,serif;font-size:18px;color:var(--ink-soft);line-height:1.8;margin-bottom:1.5rem}
+.lt-video{margin:0.5rem 0 0;padding-bottom:2rem}
+.lt-video-frame{position:relative;display:block;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10)}
+.lt-video-frame img,.lt-video-frame iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0;display:block}
+.lt-video-play{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%;background:var(--red);box-shadow:0 4px 18px rgba(0,0,0,0.3);transition:transform 0.15s,background 0.15s}
+.lt-video-play::after{content:"";position:absolute;left:29px;top:22px;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent #fff}
+.lt-video-frame:hover .lt-video-play{transform:scale(1.06);background:var(--red-dark)}
+.lt-video figcaption{font-family:'Source Serif Pro',Georgia,serif;font-size:17px;font-style:italic;color:var(--ink-soft);text-align:center;margin-top:0.85rem}
 .lt-note p:last-child{margin-bottom:0;padding-bottom:2rem}
 .lt-link:hover{color:var(--red-dark)}
 
@@ -305,11 +312,23 @@ a{color:var(--red);text-decoration:none}
 <p>Whatever shape it takes, the conversation almost always ends up easier than the silence that came before it.</p>
 
 <p>Once a conversation like that has started, much of what follows is practical. Most of what a family needs to know about a home is ordinary information that only one person happens to hold, and I wrote about that separately in <a class="lt-link" href="/articles/what-a-family-needs-to-know-if-someone-steps-in">Under One Roof: Where a Home Keeps Its Answers</a>.</p>
+
+<p>And once the practical work begins, it has a way of landing on one person. I wrote about that in <a class="lt-link" href="/articles/free-available-and-running-on-fumes">Free, Available 24/7 and Running on Fumes</a>.</p>
 </div>
 
 <hr class="lt-divider">
 <div class="lt-note">
-<p>Getting a plan onto paper is often the hardest part of getting started. That is part of why I created <a class="lt-link" href="https://kintrak.ca">Kintrak</a>, a fillable, printable organizer for one person's important details. The Kintrak organizer is a calm record of the details that matter. It answers a simple question: if someone had to step in tomorrow, would they know where to look? A blank page can be a surprisingly gentle place to begin.</p>
+<p>Getting a plan onto paper is often the hardest part of getting started. That is part of why I created <a class="lt-link" href="https://kintrak.ca/?utm_source=leadtime&amp;utm_medium=article&amp;utm_campaign=starting-the-conversation">Kintrak</a>, a fillable, printable organizer for one person's important details. The Kintrak organizer is a calm record of the details that matter. It answers a simple question: if someone had to step in tomorrow, would they know where to look? A blank page can be a surprisingly gentle place to begin.</p>
+
+<!-- Video thumbnail (November 2026). Clicking it plays the video right here
+     on the page; if that can't happen, the link opens it on YouTube instead. -->
+<figure class="lt-video">
+<a class="lt-video-frame" id="lt-video" href="https://youtu.be/GhviwFioSLo" target="_blank" rel="noopener noreferrer" aria-label="Play the Kintrak video walkthrough">
+<img src="https://i.ytimg.com/vi/GhviwFioSLo/maxresdefault.jpg" alt="Kintrak video walkthrough" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://i.ytimg.com/vi/GhviwFioSLo/hqdefault.jpg';}">
+<span class="lt-video-play" aria-hidden="true"></span>
+</a>
+<figcaption>Watch a short video walkthrough of Kintrak</figcaption>
+</figure>
 </div>
 <hr class="lt-divider">
 
@@ -349,6 +368,27 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 </div>
 </footer>
 
+<script>
+// Play the Kintrak video in the page when its thumbnail is clicked.
+(function () {
+  try {
+    var v = document.getElementById('lt-video');
+    if (!v) return;
+    v.addEventListener('click', function (e) {
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/GhviwFioSLo?autoplay=1&rel=0';
+      f.title = 'Kintrak video walkthrough';
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      v.innerHTML = '';
+      v.appendChild(f);
+      v.removeAttribute('href');
+    });
+  } catch (e) {}
+})();
+</script>
+
 <!-- Kintrak pop-up and phone/tablet bar (October 2026). Shown first on the
      articles. If it is closed without a click through, the guide offer below
      follows it (added October 16, 2026). The
@@ -358,7 +398,7 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 <div class="lt-pop" id="lt-pop" role="dialog" aria-modal="true" aria-labelledby="lt-pop-h">
 <div class="lt-pop-card">
 <button type="button" class="lt-pop-x" id="lt-pop-x" aria-label="Close">&times;</button>
-<p class="lt-pop-lead">If someone had to step in tomorrow, would they know where to&nbsp;look?</p>
+<p class="lt-pop-lead">If someone had to step in tomorrow, would they know what to&nbsp;do?</p>
 <div class="lt-pop-label">Kintrak</div>
 <h2 class="lt-pop-h" id="lt-pop-h">The Kintrak Family Readiness&nbsp;Organizer</h2>
 <p class="lt-pop-intro">It gathers what a family would need to know, in one&nbsp;place:</p>
@@ -366,7 +406,8 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 <li>the first calls to the people involved</li>
 <li>how the home works and who services what</li>
 <li>health basics</li>
-<li>where the paperwork lives</li>
+<li>how pets, if any, are cared for</li>
+<li>where the important paperwork is kept</li>
 <li>and the routines that keep an ordinary day running</li>
 </ul>
 <p class="lt-pop-note">Every Kintrak order includes two copies, each personalized with any name you choose. Keep one for yourself, give one, or give&nbsp;both.</p>
