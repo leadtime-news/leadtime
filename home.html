@@ -173,6 +173,19 @@ a{color:var(--red);text-decoration:none}
 .lt-signup-h{font-size:22px}
 .lt-guide{padding:2.5rem 1.25rem 3rem}
 }
+.lt-video{margin:0}
+.lt-video-frame{position:relative;display:block;aspect-ratio:16/9;background:#000;border-radius:4px;overflow:hidden;box-shadow:0 2px 16px rgba(0,0,0,0.10)}
+.lt-video-frame img,.lt-video-frame iframe{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;border:0;display:block}
+.lt-video-play{position:absolute;left:50%;top:50%;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:50%;background:var(--red);box-shadow:0 4px 18px rgba(0,0,0,0.3);transition:transform 0.15s,background 0.15s}
+.lt-video-play::after{content:"";position:absolute;left:29px;top:22px;border-style:solid;border-width:14px 0 14px 22px;border-color:transparent transparent transparent #fff}
+.lt-video-frame:hover .lt-video-play{transform:scale(1.06);background:var(--red-dark)}
+.lt-video figcaption{font-family:'Source Serif Pro',Georgia,serif;font-size:17px;font-style:italic;color:var(--ink-soft);text-align:center;margin-top:0.85rem}
+/* Kintrak section with the video (November 22, 2026) */
+.lt-kintrak{background:var(--cream);padding:3.5rem 2rem 3rem;border-bottom:1px solid var(--rule)}
+.lt-kintrak-inner{max-width:680px;margin:0 auto}
+.lt-kintrak-lead{font-family:'Source Serif Pro',Georgia,serif;font-size:20px;font-style:italic;color:var(--ink-soft);line-height:1.55;text-align:center;text-wrap:balance;margin:0 auto 2rem;max-width:560px}
+.lt-kintrak-more{text-align:center;margin-top:1.75rem}
+@media(max-width:640px){.lt-kintrak{padding:2.5rem 1.25rem 2.5rem}.lt-kintrak-lead{font-size:18px}}
 </style>
 <style>
 /* Four menu items (October 2026): a little tighter on small phones only */
@@ -288,13 +301,30 @@ a{color:var(--red);text-decoration:none}
 </div>
 </section>
 
+<!-- Kintrak, with the video walkthrough (November 22, 2026). Sits below the
+     articles so it never competes with the guide signup at the top. -->
+<section class="lt-kintrak">
+<div class="lt-kintrak-inner">
+<div class="lt-sec-head">Kintrak</div>
+<p class="lt-kintrak-lead">Some of the questions families mean to ask can be answered and recorded in one&nbsp;place.</p>
+<figure class="lt-video">
+<a class="lt-video-frame" id="lt-video" href="https://youtu.be/GhviwFioSLo" target="_blank" rel="noopener noreferrer" aria-label="Play the Kintrak video walkthrough">
+<img src="https://i.ytimg.com/vi/GhviwFioSLo/maxresdefault.jpg" alt="Kintrak video walkthrough" loading="lazy" onerror="if(!this.dataset.f){this.dataset.f=1;this.src='https://i.ytimg.com/vi/GhviwFioSLo/hqdefault.jpg';}">
+<span class="lt-video-play" aria-hidden="true"></span>
+</a>
+<figcaption>Watch a short video walkthrough of Kintrak</figcaption>
+</figure>
+<div class="lt-kintrak-more"><a class="lt-btn" href="https://kintrak.ca/?utm_source=leadtime&amp;utm_medium=home-page&amp;utm_campaign=kintrak-section" target="_blank" rel="noopener noreferrer">Have a peek inside Kintrak</a></div>
+</div>
+</section>
+
 <!-- Small reminder (October 18, 2026). The button takes the reader back up
      to the signup box on this page rather than to another page. -->
 <section class="lt-guide">
 <div class="lt-guide-inner">
 <div class="lt-cta-card">
 <div class="lt-cta-label">Free Guide</div>
-<div class="lt-cta-line">The Aging-in-Place Home Walk-Through</div>
+<div class="lt-cta-line">The Aging-in-Place Home&nbsp;Walk&#8209;Through</div>
 <a class="lt-btn" href="#guide" id="lt-home-jump">Get the free guide</a>
 </div>
 </div>
@@ -520,6 +550,27 @@ Lead Time<span class="lp-footer-brand-rule"></span>
           submitBtn.disabled = false;
           submitBtn.textContent = originalText;
         });
+    });
+  } catch (e) {}
+})();
+</script>
+
+<script>
+// Play the Kintrak video in the page when its thumbnail is clicked.
+(function () {
+  try {
+    var v = document.getElementById('lt-video');
+    if (!v) return;
+    v.addEventListener('click', function (e) {
+      e.preventDefault();
+      var f = document.createElement('iframe');
+      f.src = 'https://www.youtube-nocookie.com/embed/GhviwFioSLo?autoplay=1&rel=0';
+      f.title = 'Kintrak video walkthrough';
+      f.allow = 'autoplay; encrypted-media; picture-in-picture; fullscreen';
+      f.allowFullscreen = true;
+      v.innerHTML = '';
+      v.appendChild(f);
+      v.removeAttribute('href');
     });
   } catch (e) {}
 })();
