@@ -159,6 +159,49 @@ a{color:var(--red);text-decoration:none}
 /* Section menu (November 2026): six sections, wrapping neatly on phones */
 .lt-nav{flex-wrap:wrap;row-gap:.6rem;column-gap:1.75rem}
 @media(max-width:640px){.lt-nav{column-gap:1.1rem;row-gap:.5rem}}
+/* Section and Articles pages with a sidebar (November 2026) */
+.ap-grid{display:flex;flex-wrap:wrap;gap:3rem;padding:2rem 0 3rem;border-bottom:1px solid var(--rule);align-items:flex-start}
+.ap-grid .lt-article{flex:999 1 560px;min-width:0;padding:0;background:transparent}
+.ap-grid .lt-article-inner{max-width:700px;margin:0}
+.ap-grid .lt-eyebrow{text-align:left;margin-bottom:.9rem}
+.ap-grid .lt-article h1{text-align:left;font-size:44px;line-height:1.12}
+.ap-grid .lt-deck{text-align:left;margin:0 0 1.5rem;font-size:22px}
+.ap-grid .lt-byline{text-align:left;padding-bottom:1.25rem}
+.ap-grid .lt-body > p:first-child::first-letter{float:left;font-family:'Source Serif Pro',Georgia,serif;font-size:4.1em;line-height:.85;font-weight:600;padding:.08em .12em 0 0;color:var(--red)}
+.ap-side{flex:1 1 280px;min-width:0;display:flex;flex-direction:column;gap:2rem;position:sticky;top:1.5rem}
+.ap-card{background:#fff;border:1px solid var(--ink);padding:1.5rem}
+.ap-card-soft{background:#faf8f2}
+.ap-label{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.ap-card h2{font-family:'Source Serif Pro',Georgia,serif;font-size:22px;font-weight:600;line-height:1.25;margin:.5rem 0 .5rem;color:var(--ink)}
+.ap-card h2.ap-guide-h{font-size:20px}
+.ap-card p{font-family:'Source Serif Pro',Georgia,serif;font-size:16px;line-height:1.55;color:var(--ink-soft);margin-bottom:1rem}
+.ap-card .ap-card-btn{display:block;text-align:center;background:var(--red);color:#fff;font-family:'Inter',sans-serif;font-size:15px;font-weight:600;padding:12px 16px;border-radius:3px}
+.ap-card .ap-card-btn:hover{background:var(--red-dark);color:#fff}
+.ap-card .ap-card-link{font-family:'Inter',sans-serif;font-size:14px;font-weight:600;color:var(--red)}
+.ap-list{border-top:3px solid var(--ink);padding-top:.9rem;display:flex;flex-direction:column;gap:1rem}
+.ap-list-h{font-family:'Inter',sans-serif;font-size:11px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-muted)}
+.ap-list a{display:block;font-family:'Source Serif Pro',Georgia,serif;font-size:18px;line-height:1.3;font-weight:600;color:var(--ink)}
+.ap-list a:hover{color:var(--red)}
+.ap-list small{display:block;font-family:'Inter',sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:.2rem}
+.ap-more{padding:2.5rem 0 3rem}
+.ap-more-h{font-family:'Inter',sans-serif;font-size:13px;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--ink);margin-bottom:1.25rem}
+.ap-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.75rem}
+.ap-c{border-top:1px solid var(--ink);padding-top:.9rem;display:flex;flex-direction:column;gap:.5rem;color:var(--ink)}
+.ap-c h3{font-family:'Source Serif Pro',Georgia,serif;font-size:21px;line-height:1.25;font-weight:600;color:var(--ink);text-wrap:balance}
+.ap-c p{font-family:'Source Serif Pro',Georgia,serif;font-size:16px;font-style:italic;line-height:1.5;color:var(--ink-soft)}
+.ap-c:hover h3{color:var(--red)}
+@media(max-width:900px){.ap-side{position:static}}
+.ap-grid .ap-main{flex:999 1 560px;min-width:0}
+.ap-wrap .ap-main .lt-list{padding:0;background:transparent}
+.ap-wrap .ap-main .lt-list-inner{display:block;max-width:none}
+.ap-wrap .ap-main .lt-card{display:block;border:0;border-top:1px solid var(--ink);border-radius:0;padding:1.1rem 0 1.75rem;margin:0;background:transparent;box-shadow:none;transform:none}
+.ap-wrap .ap-main .lt-card:first-child{border-top:3px solid var(--ink)}
+.ap-wrap .ap-main .lt-card h2{font-size:30px;line-height:1.2;max-width:640px}
+.ap-wrap .ap-main .lt-card p{font-size:19px;max-width:640px}
+.ap-wrap .ap-main .lt-empty{text-align:left;padding:1.25rem 0 1.5rem;border-top:3px solid var(--ink)}
+.ap-wrap .ap-main .lt-seeall{text-align:left;margin-top:.5rem}
+.ap-wrap .lt-index-hero{border-bottom:0;padding-bottom:.5rem}
+@media(max-width:640px){.ap-wrap .ap-main .lt-card h2{font-size:24px}.ap-wrap .ap-main .lt-card p{font-size:17px}}
 </style>
 </head>
 <body>
@@ -185,6 +228,8 @@ a{color:var(--red);text-decoration:none}
 <p>Where We Dwell is about the housing decisions that come later in life: staying, adapting a home, moving, and what a home asks of the person in&nbsp;it.</p>
 </section>
 
+<div class="ap-grid">
+<div class="ap-main">
 <section class="lt-list">
 <div class="lt-list-inner">
 <a class="lt-card" href="/articles/when-the-house-stops-fitting">
@@ -196,6 +241,31 @@ a{color:var(--red);text-decoration:none}
 <div class="lt-seeall"><a href="/articles">See all articles &rarr;</a></div>
 </div>
 </section>
+</div>
+<aside class="ap-side">
+<div class="ap-card">
+<div class="ap-label">Free newsletter</div>
+<h2>The Lead&nbsp;Time Newsletter</h2>
+<p>One email a week, usually on a Tuesday morning. It is free, and you can leave whenever you like.</p>
+<a class="ap-card-btn" href="/newsletter">Subscribe</a>
+</div>
+
+<div class="ap-list">
+<div class="ap-list-h">Also on Lead Time</div>
+<a href="/articles/free-available-and-running-on-fumes"><small>Sandwiched</small>Free, Available 24/7 and Running on&nbsp;Fumes</a>
+<a href="/articles/what-a-family-needs-to-know-if-someone-steps-in"><small>Logistics</small>Under One Roof: Where a Home Keeps Its&nbsp;Answers</a>
+<a href="/articles/starting-the-conversation-about-where-a-parent-will-live"><small>Real Talk</small>The Conversation Everyone Is Waiting for Someone Else to&nbsp;Start</a>
+<a href="/articles/why-downsizing-gets-it-wrong"><small>Next</small>The Word Worth Retiring: Why Downsizing Gets It&nbsp;Wrong</a>
+</div>
+
+<div class="ap-card ap-card-soft">
+<div class="ap-label">Free guide</div>
+<h2 class="ap-guide-h">The Aging&#8209;in&#8209;Place<br><span style="white-space:nowrap">Home Walk&#8209;Through Guide</span></h2>
+<p>A set of questions for seeing whether a home could support independent living, yours or a parent&rsquo;s.</p>
+<a class="ap-card-link" href="/lead-time-walkthrough.html" target="_blank" rel="noopener noreferrer">Get the free guide &rarr;</a>
+</div>
+</aside>
+</div>
 
 </div>
 
