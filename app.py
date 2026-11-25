@@ -178,6 +178,14 @@ SIGNUP_SOURCES = {
         'referring_site': 'https://leadtime.news/',
         'label': 'the signup box on the leadtime.news home page',
     },
+    # Added November 2026: the subscribe page, leadtime.news/newsletter, for
+    # people who want the newsletter without the guide.
+    'subscribe-page': {
+        'utm_source': 'leadtime.news',
+        'utm_medium': 'subscribe-page',
+        'referring_site': 'https://leadtime.news/newsletter',
+        'label': 'the subscribe page (leadtime.news/newsletter), newsletter only, no guide',
+    },
 }
 
 
@@ -439,6 +447,8 @@ def send_signup_notification(email, first_name, newsletter_optin,
             via = ' (via pop-up on leadtime.news)'
         elif source == 'home-page':
             via = ' (via home page)'
+        elif source == 'subscribe-page':
+            via = ' (via subscribe page)'
         else:
             via = ''
         if ad:
@@ -450,7 +460,19 @@ def send_signup_notification(email, first_name, newsletter_optin,
         first_date = first_subscribed.strftime('%B %d, %Y') if first_subscribed else ''
 
         message = EmailMessage()
-        if newsletter_optin and existing == 'current':
+        if source == 'subscribe-page' and existing == 'current':
+            message['Subject'] = f'Already a subscriber{via}: {email}'
+            intro = ('Someone who is ALREADY a Lead Time subscriber filled in the '
+                     'subscribe page again. Nothing has changed on your list.')
+        elif source == 'subscribe-page' and existing == 'former':
+            message['Subject'] = f'Returning subscriber (had unsubscribed){via}: {email}'
+            intro = ('Someone who unsubscribed from Lead Time in the past just '
+                     'subscribed again on the subscribe page.')
+        elif source == 'subscribe-page':
+            message['Subject'] = f'New Lead Time subscriber{via}: {email}'
+            intro = ('A new subscriber just joined Lead Time on the subscribe page '
+                     '(newsletter only, no guide).')
+        elif newsletter_optin and existing == 'current':
             message['Subject'] = f'Guide download by current subscriber{via}: {email}'
             intro = ('Someone who is ALREADY a Lead Time subscriber downloaded the '
                      'guide and ticked the newsletter box again. Nothing has changed '
@@ -487,6 +509,12 @@ def send_signup_notification(email, first_name, newsletter_optin,
             history_line = ''
 
         name_line = f'Name: {first_name}\n' if first_name else ''
+        if source == 'subscribe-page':
+            failed_line = ('If the line above says FAILED, that person saw the thank-you '
+                           'message, but you may want to add them to beehiiv by hand.\n')
+        else:
+            failed_line = ('If the line above says FAILED, that person still received the '
+                           'guide, but you may want to add them to beehiiv by hand.\n')
         message.set_content(
             f'{intro}\n'
             '\n'
@@ -500,8 +528,7 @@ def send_signup_notification(email, first_name, newsletter_optin,
             '\n'
             f'beehiiv: {beehiiv_status}\n'
             '\n'
-            'If the line above says FAILED, that person still received the '
-            'guide, but you may want to add them to beehiiv by hand.\n'
+            f'{failed_line}'
             '\n'
             'Sent automatically by leadtime.news.'
         )
@@ -600,6 +627,12 @@ def landing_page():
 @app.route('/lead-time-walkthrough.html')
 def landing_page_old_address():
     return redirect(SIGNUP_PAGE_PATH + query_string(), code=301)
+
+
+# The subscribe page (November 2026): the newsletter on its own, no guide.
+@app.route('/newsletter')
+def newsletter_page():
+    return send_from_directory('.', 'newsletter.html')
 
 
 # Serve the thank-you page
@@ -724,6 +757,11 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://leadtime.news/walkthrough</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/newsletter</loc>
     <changefreq>monthly</changefreq>
     <priority>0.9</priority>
   </url>
@@ -947,6 +985,8 @@ def describe_source(data):
         return 'the pop-up guide offer on a leadtime.news page'
     if source == 'leadtime.news' and medium == 'home-page':
         return 'the signup box on the leadtime.news home page'
+    if source == 'leadtime.news' and medium == 'subscribe-page':
+        return 'the subscribe page at leadtime.news/newsletter'
     if source == 'leadtime.news':
         return 'the signup page at leadtime.news'
     if source == 'kintrak.ca' and medium == 'kintrak-guide-popup':
