@@ -662,6 +662,38 @@ def article_free_available_and_running_on_fumes():
     return send_from_directory('.', 'free-available-and-running-on-fumes.html')
 
 
+# Section pages (November 2026). Each lists the articles in one section of
+# the front page's menu.
+@app.route('/where-we-dwell')
+def section_where_we_dwell():
+    return send_from_directory('.', 'where-we-dwell.html')
+
+
+@app.route('/distance')
+def section_distance():
+    return send_from_directory('.', 'distance.html')
+
+
+@app.route('/logistics')
+def section_logistics():
+    return send_from_directory('.', 'logistics.html')
+
+
+@app.route('/real-talk')
+def section_real_talk():
+    return send_from_directory('.', 'real-talk.html')
+
+
+@app.route('/sandwiched')
+def section_sandwiched():
+    return send_from_directory('.', 'sandwiched.html')
+
+
+@app.route('/next')
+def section_next():
+    return send_from_directory('.', 'next.html')
+
+
 # Recipes. Added October 2026 for the Thanksgiving edition. A recipe page is
 # reached from the newsletter rather than the menu, so it has its own address
 # under /recipes/.
@@ -697,6 +729,36 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://leadtime.news/articles</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/where-we-dwell</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/distance</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/logistics</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/real-talk</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/sandwiched</loc>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/next</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>

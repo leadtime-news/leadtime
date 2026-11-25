@@ -163,6 +163,11 @@ a{color:var(--red);text-decoration:none}
 /* Four menu items (October 2026): a little tighter on small phones only */
 @media(max-width:420px){.lt-nav{gap:1rem!important;padding-left:.75rem!important;padding-right:.75rem!important}.lt-nav a{font-size:12px!important;letter-spacing:.06em!important}}
 </style>
+<style>
+/* Section menu (November 2026): six sections, wrapping neatly on phones */
+.lt-nav{flex-wrap:wrap;row-gap:.6rem;column-gap:1.75rem}
+@media(max-width:640px){.lt-nav{column-gap:1.1rem;row-gap:.5rem}}
+</style>
 </head>
 <body>
 
@@ -174,11 +179,13 @@ a{color:var(--red);text-decoration:none}
 </header>
 <!-- Section nav -->
 <div class="lt-nav-wrap">
-<nav class="lt-nav" aria-label="Section">
-<a href="/home">Home</a>
-<a href="/articles">Articles</a>
-<a href="/grandparents">Grandparents</a>
-<a href="/about">About</a>
+<nav class="lt-nav" aria-label="Sections">
+<a href="/where-we-dwell">Where We Dwell</a>
+<a href="/distance">Distance</a>
+<a href="/logistics">Logistics</a>
+<a href="/real-talk">Real Talk</a>
+<a href="/sandwiched">Sandwiched</a>
+<a href="/next">Next</a>
 </nav>
 </div>
 
@@ -235,6 +242,7 @@ Lead Time<span class="lp-footer-brand-rule"></span>
 <div class="lp-footer-links">
 <a href="/about">About</a>
 <a href="/articles">Articles</a>
+<a href="/grandparents">Grandparents</a>
 <a href="/privacy-and-terms">Privacy &amp; Terms</a>
 <a class="lp-footer-social" href="https://www.linkedin.com/in/karen-light-1b403a20/" target="_blank" rel="noopener noreferrer" aria-label="Karen Light on LinkedIn" title="Connect on LinkedIn">
 <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.95v5.66H9.36V9h3.41v1.56h.05c.47-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.45v6.29zM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12zm1.78 13.02H3.56V9h3.56v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.72v20.56C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.72V1.72C24 .77 23.2 0 22.22 0z"/></svg>
