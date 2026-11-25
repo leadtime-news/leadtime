@@ -202,6 +202,17 @@ a{color:var(--red);text-decoration:none}
 .ap-wrap .ap-main .lt-seeall{text-align:left;margin-top:.5rem}
 .ap-wrap .lt-index-hero{border-bottom:0;padding-bottom:.5rem}
 @media(max-width:640px){.ap-wrap .ap-main .lt-card h2{font-size:24px}.ap-wrap .ap-main .lt-card p{font-size:17px}}
+/* Article photos on listing pages (November 2026) */
+.ap-wrap .ap-main .lt-card-photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;background:#e9e4d8}
+.ap-wrap .ap-main .lt-card-lead .lt-card-photo{margin:.4rem 0 1.25rem}
+.ap-wrap .ap-main .lt-card-lead h2{font-size:36px}
+.ap-wrap .ap-main .lt-card-thumb{display:grid;grid-template-columns:260px minmax(0,1fr);column-gap:1.75rem;align-items:start}
+.ap-wrap .ap-main .lt-card-thumb .lt-card-photo{grid-row:1 / span 4;margin-top:.35rem}
+@media(max-width:640px){
+.ap-wrap .ap-main .lt-card-lead h2{font-size:26px}
+.ap-wrap .ap-main .lt-card-thumb{display:block}
+.ap-wrap .ap-main .lt-card-thumb .lt-card-photo{margin:.4rem 0 1rem}
+}
 </style>
 </head>
 <body>
@@ -232,7 +243,8 @@ a{color:var(--red);text-decoration:none}
 <div class="ap-main">
 <section class="lt-list">
 <div class="lt-list-inner">
-<a class="lt-card" href="/articles/when-the-house-stops-fitting">
+<a class="lt-card lt-card-lead" href="/articles/when-the-house-stops-fitting">
+<img class="lt-card-photo" src="/lead-when-the-house-stops-fitting.jpg" width="1200" height="800" alt="A staircase in a bright front hall, with the caption: Same house. New questions." loading="lazy">
 <div class="lt-card-eyebrow">Where We Dwell</div>
 <h2>When the House Stops&nbsp;Fitting</h2>
 <p>Same house, new questions, and some time to think about the answers.</p>
