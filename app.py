@@ -802,7 +802,7 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://leadtime.news/articles/when-the-house-stops-fitting</loc>
-    <lastmod>2026-06-09</lastmod>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
