@@ -813,19 +813,19 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   </url>
   <url>
     <loc>https://leadtime.news/articles/why-downsizing-gets-it-wrong</loc>
-    <lastmod>2026-07-27</lastmod>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://leadtime.news/articles/starting-the-conversation-about-where-a-parent-will-live</loc>
-    <lastmod>2026-08-07</lastmod>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
     <loc>https://leadtime.news/articles/what-a-family-needs-to-know-if-someone-steps-in</loc>
-    <lastmod>2026-09-08</lastmod>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
