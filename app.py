@@ -695,6 +695,11 @@ def article_free_available_and_running_on_fumes():
     return send_from_directory('.', 'free-available-and-running-on-fumes.html')
 
 
+@app.route('/articles/close-enough-to-worry-too-far-to-drop-by')
+def article_close_enough_to_worry():
+    return send_from_directory('.', 'close-enough-to-worry-too-far-to-drop-by.html')
+
+
 # Section pages (November 2026). Each lists the articles in one section of
 # the front page's menu.
 @app.route('/where-we-dwell')
@@ -827,6 +832,12 @@ SITEMAP_XML = """<?xml version="1.0" encoding="UTF-8"?>
   <url>
     <loc>https://leadtime.news/articles/free-available-and-running-on-fumes</loc>
     <lastmod>2026-11-22</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://leadtime.news/articles/close-enough-to-worry-too-far-to-drop-by</loc>
+    <lastmod>2026-11-25</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>

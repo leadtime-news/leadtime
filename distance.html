@@ -203,6 +203,17 @@ a{color:var(--red);text-decoration:none}
 .ap-wrap .ap-main .lt-seeall{text-align:left;margin-top:.5rem}
 .ap-wrap .lt-index-hero{border-bottom:0;padding-bottom:.5rem}
 @media(max-width:640px){.ap-wrap .ap-main .lt-card h2{font-size:24px}.ap-wrap .ap-main .lt-card p{font-size:17px}}
+/* Article photos on listing pages (November 2026) */
+.ap-wrap .ap-main .lt-card-photo{display:block;width:100%;height:auto;aspect-ratio:3/2;object-fit:cover;background:#e9e4d8}
+.ap-wrap .ap-main .lt-card-lead .lt-card-photo{margin:.4rem 0 1.25rem}
+.ap-wrap .ap-main .lt-card-lead h2{font-size:36px}
+.ap-wrap .ap-main .lt-card-thumb{display:grid;grid-template-columns:260px minmax(0,1fr);column-gap:1.75rem;align-items:start}
+.ap-wrap .ap-main .lt-card-thumb .lt-card-photo{grid-row:1 / span 4;margin-top:.35rem}
+@media(max-width:640px){
+.ap-wrap .ap-main .lt-card-lead h2{font-size:26px}
+.ap-wrap .ap-main .lt-card-thumb{display:block}
+.ap-wrap .ap-main .lt-card-thumb .lt-card-photo{margin:.4rem 0 1rem}
+}
 </style>
 </head>
 <body>
@@ -233,7 +244,13 @@ a{color:var(--red);text-decoration:none}
 <div class="ap-main">
 <section class="lt-list">
 <div class="lt-list-inner">
-<p class="lt-empty">The first article in this section is on its&nbsp;way.</p>
+<a class="lt-card lt-card-lead" href="/articles/close-enough-to-worry-too-far-to-drop-by">
+<img class="lt-card-photo" src="/lead-distance.jpg" width="1200" height="800" alt="The view from an airplane window: a white wing over the edge of a city, with mountains and clouds on the horizon." loading="lazy">
+<div class="lt-card-eyebrow">Distance</div>
+<h2>Close Enough to Worry, Too Far to Drop&nbsp;By</h2>
+<p>Distance changes what helping looks like. It doesn&rsquo;t change how much it counts.</p>
+<span class="lt-card-more">Read the article &rarr;</span>
+</a>
 <div class="lt-seeall"><a href="/articles">See all articles &rarr;</a></div>
 </div>
 </section>
